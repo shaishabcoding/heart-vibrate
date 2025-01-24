@@ -1,56 +1,63 @@
 import { useState } from "react";
 import { Sidebar as SBar, SidebarBody } from "@/components/ui/sidebar";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconTrash } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link, Outlet } from "react-router-dom";
 import { Input } from "../ui/input";
-import { MovingBorderLink } from "./MovingBorderLink";
+import { MovingBorder } from "../ui/MovingBorder";
+
+const data = [
+  {
+    _id: "lkdsjaflkjsdlkj",
+    logo: "https://picsum.photos/200",
+    name: "John Doe",
+    lastMessage: "Hey, how are you?",
+    isActive: true,
+    isRead: false,
+  },
+  {
+    _id: "lkdsjaflkjsdlkj",
+    logo: "https://picsum.photos/200",
+    name: "Jane Smith",
+    lastMessage: "Are you coming to the meeting?",
+    isActive: false,
+    isRead: true,
+  },
+  {
+    _id: "lkdsjaflkjsdlkj",
+    logo: "https://picsum.photos/200",
+    name: "Alice Johnson",
+    lastMessage: "Let's catch up later.",
+    isActive: true,
+    isRead: false,
+  },
+  {
+    _id: "lkdsjaflkjsdlkj",
+    logo: "https://picsum.photos/200",
+    name: "Bob Brown",
+    lastMessage: "Can you send me the report?",
+    isActive: false,
+    isRead: true,
+  },
+  {
+    _id: "lkdsjaflkjsdlkj",
+    logo: "https://picsum.photos/200",
+    name: "Charlie Davis",
+    lastMessage: "Good morning!",
+    isActive: true,
+    isRead: false,
+  },
+];
 
 export default function ChatSidebar() {
-  const data = [
-    {
-      _id: "lkdsjaflkjsdlkj",
-      logo: "https://picsum.photos/200",
-      name: "John Doe",
-      lastMessage: "Hey, how are you?",
-      isActive: true,
-      isRead: false,
-    },
-    {
-      _id: "lkdsjaflkjsdlkj",
-      logo: "https://picsum.photos/200",
-      name: "Jane Smith",
-      lastMessage: "Are you coming to the meeting?",
-      isActive: false,
-      isRead: true,
-    },
-    {
-      _id: "lkdsjaflkjsdlkj",
-      logo: "https://picsum.photos/200",
-      name: "Alice Johnson",
-      lastMessage: "Let's catch up later.",
-      isActive: true,
-      isRead: false,
-    },
-    {
-      _id: "lkdsjaflkjsdlkj",
-      logo: "https://picsum.photos/200",
-      name: "Bob Brown",
-      lastMessage: "Can you send me the report?",
-      isActive: false,
-      isRead: true,
-    },
-    {
-      _id: "lkdsjaflkjsdlkj",
-      logo: "https://picsum.photos/200",
-      name: "Charlie Davis",
-      lastMessage: "Good morning!",
-      isActive: true,
-      isRead: false,
-    },
-  ];
   const [open, setOpen] = useState(false);
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    console.log("Delete");
+  };
   return (
     <div
       className={cn(
@@ -59,21 +66,50 @@ export default function ChatSidebar() {
       )}
     >
       <SBar open={open} setOpen={setOpen}>
-        <SidebarBody className="min-w-fit border--gray-200">
+        <SidebarBody className="min-w-fit border-gray-200">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {data?.map(({ logo, lastMessage, name, isActive, isRead, _id }) =>
                 open ? (
-                  <MovingBorderLink
-                    to={_id}
-                    logo={logo}
-                    name={name}
-                    lastMessage={lastMessage}
-                    isActive={isActive}
-                    isRead={isRead}
-                    open={open}
-                  />
+                  <MovingBorder>
+                    <Link
+                      onClick={() => console.log("Clicked")}
+                      to={_id}
+                      className={`flex border active:animate-click items-center gap-2 ${
+                        open ? "p-2 rounded-md" : "rounded-full p-1"
+                      } ${
+                        isRead ? "bg-gray-100" : "bg-white"
+                      } dark:bg-neutral-900 transition cursor-pointer`}
+                    >
+                      <div className="relative">
+                        <img
+                          src={logo}
+                          alt="logo"
+                          className="h-10 w-10 rounded-full"
+                        />
+                        {isActive && (
+                          <div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
+                        )}
+                      </div>
+
+                      {open && (
+                        <div className="flex flex-col">
+                          <p className="text-sm font-semibold">{name}</p>
+                          <p className="text-xs text-gray-400">{lastMessage}</p>
+                        </div>
+                      )}
+
+                      <div className="self-center grow flex justify-end">
+                        <button
+                          onClick={handleDelete}
+                          className="active:animate-click aspect-square p-2 box-border hover:border-red-600 flex items-center justify-center text-red-400 bg-red-50"
+                        >
+                          <IconTrash />
+                        </button>
+                      </div>
+                    </Link>
+                  </MovingBorder>
                 ) : (
                   <div className="relative">
                     <img

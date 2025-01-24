@@ -88,10 +88,10 @@ const ChatBox = () => {
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg">
       <div className="flex-1 p-4 overflow-y-auto">
-        {messages.map((message) => (
+        {messages.map((message, idx) => (
           <div
             key={message.id}
-            className={`flex items-start ${
+            className={`flex my-2 items-start ${
               message.sender === "user" ? "justify-end" : "justify-start"
             }`}
           >
@@ -103,16 +103,27 @@ const ChatBox = () => {
               />
             )}
             <div
-              className={`relative max-w-xs p-3 my-2 rounded-lg ${
-                message.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
+              className={`relative max-w-xs`}
               onMouseDown={() => handleMouseDown(message.id)}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
             >
-              {message.text}
+              <div className="flex flex-col gap-2">
+                <span
+                  className={`font-medium ${idx % 2 && "w-full text-right"}`}
+                >
+                  {message.sender}
+                </span>
+                <span
+                  className={`${
+                    message.sender === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-800"
+                  } p-2 rounded-lg`}
+                >
+                  {message.text}
+                </span>
+              </div>
               {selectedMessage === message.id && (
                 <div
                   ref={menuRef}
@@ -165,7 +176,7 @@ const ChatBox = () => {
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           />
           <button
-            className="ml-2 p-2 text-white rounded-lg flex justify-center bg-blue-600 group/btn-send relative outline-none focus:outline-none active:animate-click" 
+            className="ml-2 p-2 text-white rounded-lg flex justify-center bg-blue-600 group/btn-send relative outline-none focus:outline-none active:animate-click"
             onClick={handleSendMessage}
           >
             <span className="group-hover/btn-send:translate-x-40 text-center transition duration-500">

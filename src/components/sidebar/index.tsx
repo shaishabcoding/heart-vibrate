@@ -14,8 +14,12 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link, Outlet } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
 
 export default function Sidebar() {
+  const useDispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const links = [
     {
       label: "Chats",
@@ -25,24 +29,10 @@ export default function Sidebar() {
       ),
     },
     {
-      label: "Sign Up",
-      href: "signup",
-      icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
       label: "Settings",
       href: "#",
       icon: (
         <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: (
-        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];
@@ -62,23 +52,47 @@ export default function Sidebar() {
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
               ))}
+              {user ? (
+                <SidebarLink
+                  link={{
+                    label: "Logout",
+                    href: "#",
+                    icon: (
+                      <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                  }}
+                  onClick={() => useDispatch(logout())}
+                />
+              ) : (
+                <SidebarLink
+                  link={{
+                    label: "Sign Up",
+                    href: "/signup",
+                    icon: (
+                      <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                  }}
+                />
+              )}
             </div>
           </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: "Manu Arora",
-                href: "#",
-                icon: (
-                  <img
-                    src="https://assets.aceternity.com/manu.png"
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
-          </div>
+          {user && (
+            <div>
+              <SidebarLink
+                link={{
+                  label: user?.name.firstName + " " + user?.name.lastName,
+                  href: "#",
+                  icon: (
+                    <img
+                      src={user?.avatar}
+                      className="h-7 w-7 flex-shrink-0 rounded-full"
+                      alt="Avatar"
+                    />
+                  ),
+                }}
+              />
+            </div>
+          )}
         </SidebarBody>
       </SBar>
       <div className="w-full h-full">

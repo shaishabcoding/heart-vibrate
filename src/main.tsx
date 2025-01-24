@@ -6,6 +6,10 @@ import App from "./App";
 import Chat from "./pages/chats/Chat";
 import Signup from "./pages/signup/Signup";
 import ChatBox from "./components/chat/ChatBox";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "./redux/store";
+import Login from "./pages/login/Login";
 
 const router = createBrowserRouter([
   {
@@ -26,12 +30,20 @@ const router = createBrowserRouter([
         path: "signup",
         element: <Signup />,
       },
+      {
+        path: "login",
+        element: <Login />,
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider {...{ store }}>
+      <PersistGate loading="loading auth" persistor={persistor}>
+        <RouterProvider router={router} />
+      </PersistGate>
+    </Provider>
   </React.StrictMode>
 );
