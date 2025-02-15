@@ -17,8 +17,56 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
-body *:not(#root):not(#root *) {
+/* Completely hide all Google Translate elements, popups, overlays */
+.goog-te-banner-frame,
+.goog-te-gadget,
+.goog-te-combo,
+.goog-tooltip,
+.goog-te-balloon-frame,
+.goog-te-menu-frame,
+.goog-te-spinner-pos,
+.goog-text-highlight,
+.goog-te-banner,
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget-simple,
+.goog-te-gadget-icon,
+.goog-te-gadget-simple img,
+.goog-te-gadget img,
+.goog-te-gadget span,
+.goog-te-gadget .goog-te-menu-value,
+.goog-te-menu-value span,
+.goog-te-menu-frame,
+iframe[src*="translate.googleapis.com"],
+iframe[class*="goog-te"],
+iframe#\:1\.container,
+iframe#\:2\.container,
+/* Hide Google Translate overlay text */
+.goog-te-text-input,
+.goog-te-text,
+.goog-te-result,
+.goog-te-text-copy,
+.goog-te-feedback-button,
+.goog-te-status,
+.goog-te-ratings-box,
+.goog-te-balloon,
+.goog-te-alert,
+.goog-te-tooltip,
+.goog-text-highlight,
+.goog-te-banner-content,
+.goog-te-prompt,
+#goog-gt-tt,
+.skiptranslate
+div:has(> span[lang]),
+span[lang],
+font[size="3"] {
 	display: none !important;
+	overflow: hidden !important;
+	visibility: hidden !important;
+	opacity: 0 !important;
+	width: 0 !important;
+	height: 0 !important;
+	position: absolute !important;
+	pointer-events: none !important;
 }
 
 body {
