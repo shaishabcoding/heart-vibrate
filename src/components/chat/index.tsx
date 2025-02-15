@@ -74,16 +74,19 @@ export default function ChatSidebar() {
 						{open ? <Logo /> : <LogoIcon />}
 						<div className="mt-8 flex flex-col gap-2">
 							{data?.map(
-								({
-									logo,
-									lastMessage,
-									name,
-									isActive,
-									isRead,
-									_id,
-								}) =>
+								(
+									{
+										logo,
+										lastMessage,
+										name,
+										isActive,
+										isRead,
+										_id,
+									},
+									idx
+								) =>
 									open ? (
-										<MovingBorder>
+										<MovingBorder key={idx}>
 											<Link
 												onClick={() =>
 													console.log('Clicked')
@@ -138,7 +141,10 @@ export default function ChatSidebar() {
 											</Link>
 										</MovingBorder>
 									) : (
-										<div className="relative">
+										<div
+											className="relative"
+											key={idx}
+										>
 											<img
 												src={logo}
 												alt="logo"

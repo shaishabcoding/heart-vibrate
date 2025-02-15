@@ -82,8 +82,9 @@ const ChatBox = () => {
 			className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg"
 		>
 			<div className="flex-1 p-4 overflow-y-auto">
-				{messages.map((message) => (
+				{messages.map((message, idx) => (
 					<ChatMessage
+						key={idx}
 						{...{
 							menuRef,
 							message,

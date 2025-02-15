@@ -15,7 +15,8 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getCookie } from '@/lib/getCookie';
 
 const languages = [
 	{ code: 'en', name: 'English' },
@@ -48,6 +49,12 @@ const GoogleTranslate = () => {
 			}
 		}, 500);
 	};
+
+	useEffect(() => {
+		const lang = getCookie('googtrans')?.split('/')?.at(-1);
+
+		if (lang) setValue(lang);
+	}, []);
 
 	return (
 		<Popover

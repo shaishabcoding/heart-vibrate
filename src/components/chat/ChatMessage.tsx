@@ -8,7 +8,15 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
-const ChatMessage = ({
+interface ChatMessageProps {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	message: any;
+	selectedMessage: string | null;
+	menuRef: React.RefObject<HTMLDivElement>;
+	setSelectedMessage: (msg: string | null) => void;
+}
+
+const ChatMessage: React.FC<ChatMessageProps> = ({
 	message,
 	selectedMessage,
 	menuRef,
@@ -68,10 +76,7 @@ const ChatMessage = ({
 						ref={menuRef}
 						className="absolute top-8 right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-lg z-10"
 					>
-						<button
-							onClick={() => alert('click')}
-							className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
-						>
+						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
 							<IconEdit /> Edit
 						</button>
 						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
