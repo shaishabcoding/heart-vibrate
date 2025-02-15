@@ -82,13 +82,6 @@ font[size="3"] {
 	pointer-events: none !important;
 }
 
-[translate='no'],
-.notranslate {
-	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-}
-
 body {
 	top: 0 !important;
 }
