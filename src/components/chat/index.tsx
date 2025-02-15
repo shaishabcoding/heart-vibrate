@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
-import { IconSearch, IconTrash } from '@tabler/icons-react';
-import { motion } from 'framer-motion';
+import { IconBrandTelegram, IconSearch, IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { Link, Outlet } from 'react-router-dom';
-import { Input } from '../ui/input';
 import { MovingBorder } from '../ui/MovingBorder';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Button } from '../ui/button';
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from '../ui/command';
+import { languages } from '@/lib/languages';
 
 const data = [
 	{
@@ -71,7 +80,7 @@ export default function ChatSidebar() {
 			>
 				<SidebarBody className="min-w-fit border-gray-200">
 					<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-						{open ? <Logo /> : <LogoIcon />}
+						{open ? <SearchBar /> : <SearchIcon />}
 						<div className="mt-8 flex flex-col gap-2">
 							{data?.map(
 								(
@@ -170,27 +179,53 @@ export default function ChatSidebar() {
 	);
 }
 
-export const Logo = () => {
+const SearchBar = () => {
 	return (
-		<div className="font-normal flex items-center text-sm text-black py-1 relative z-20 w-full">
-			<motion.span
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				className="font-medium text-black dark:text-white whitespace-pre grow"
-			>
-				<Input
-					id="search"
-					placeholder="Search a user"
-					type="text"
-					className="rounded-r-none bg-white border-r-0"
-				/>
-			</motion.span>
-			<IconSearch className="text-neutral-700 dark:text-neutral-200 bg-white rounded-r-md drop-shadow-sm h-full px-[10px] w-10 items-center justify-center rounded-sm border hover:drop-shadow-md transition cursor-pointer hover:bg-blue-400 hover:text-white scale-95 active:animate-click" />
-		</div>
+		<Popover>
+			<MovingBorder>
+				<PopoverTrigger asChild>
+					<Button
+						translate="no"
+						variant="outline"
+						role="combobox"
+						aria-expanded={open}
+						className="rounded-sm bg-white border-0 relative pr-6 w-full"
+					>
+						<span className="absolute left-2">
+							Search a user...
+						</span>
+						<IconSearch className="opacity-50 absolute right-1" />
+					</Button>
+				</PopoverTrigger>
+			</MovingBorder>
+			<PopoverContent className="w-full p-0">
+				<Command>
+					<CommandInput placeholder="Search user..." />
+					<CommandList translate="no">
+						<CommandEmpty>No user found.</CommandEmpty>
+						<CommandGroup>
+							{languages.map((lang) => (
+								<CommandItem
+									className="relative active:animate-click"
+									key={lang.code}
+									value={lang.code}
+									onSelect={(currentValue) => {
+										//TODO:
+									}}
+								>
+									{lang.name}
+									<IconBrandTelegram className="absolute right-1" />
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
 	);
 };
 
-export const LogoIcon = () => {
+export const SearchIcon = () => {
 	return (
 		<Link
 			to="#"

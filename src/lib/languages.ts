@@ -1,7 +1,7 @@
 export const languages = Array.from(
 	new Map(
 		[
-			{ code: 'en', name: 'English' },
+			{ code: 'en', name: 'English (English)' },
 			{ code: 'bn', name: 'Bangla (বাংলা)' },
 			{ code: 'hi', name: 'Hindi (हिन्दी)' },
 			{ code: 'es', name: 'Spanish (Español)' },

@@ -54,7 +54,7 @@ const GoogleTranslate = () => {
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						className="rounded-sm bg-white border-0 relative pr-6"
+						className="rounded-sm bg-white border-0 relative pr-10"
 					>
 						{value
 							? languages.find((lang) => lang.code === value)
