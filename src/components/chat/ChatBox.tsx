@@ -1,11 +1,6 @@
-import {
-	IconBrandTelegram,
-	IconDotsVertical,
-	IconEdit,
-	IconHeart,
-	IconTrash,
-} from '@tabler/icons-react';
+import { IconBrandTelegram } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
+import ChatMessage from './ChatMessage';
 
 const ChatBox = () => {
 	const [messages, setMessages] = useState([
@@ -82,77 +77,20 @@ const ChatBox = () => {
 	// };
 
 	return (
-		<div className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg">
+		<div
+			translate="no"
+			className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg"
+		>
 			<div className="flex-1 p-4 overflow-y-auto">
 				{messages.map((message) => (
-					<div
-						key={message.id}
-						className={`flex my-2 items-start ${
-							message.sender === 'user'
-								? 'justify-end'
-								: 'justify-start'
-						} relative`}
-					>
-						{message.sender !== 'user' && (
-							<img
-								src={message.logo}
-								alt="logo"
-								className="h-10 w-10 rounded-full mr-2"
-							/>
-						)}
-						<div className="relative max-w-xs">
-							<div className="flex flex-col group">
-								<div className="flex items-center justify-between gap-2">
-									<span className="font-medium">
-										{message.sender}
-									</span>
-									<button
-										className="p-1 active:animate-click py-0 border-0"
-										onClick={() =>
-											setSelectedMessage(message.id)
-										}
-									>
-										<IconDotsVertical size={20} />
-									</button>
-								</div>
-								<span
-									className={`${
-										message.sender === 'user'
-											? 'bg-blue-500 text-white'
-											: 'bg-gray-200 text-gray-800'
-									} p-2 rounded-lg mt-2`}
-								>
-									{message.text}
-								</span>
-								<span className="hidden group-hover:inline-block">
-									{message.date}
-								</span>
-							</div>
-							{selectedMessage === message.id && (
-								<div
-									ref={menuRef}
-									className="absolute top-8 right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-lg z-10"
-								>
-									<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-										<IconEdit /> Edit
-									</button>
-									<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-										<IconTrash /> Delete
-									</button>
-									<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-										<IconHeart /> Like
-									</button>
-								</div>
-							)}
-						</div>
-						{message.sender === 'user' && (
-							<img
-								src={message.logo}
-								alt="logo"
-								className="h-10 w-10 rounded-full ml-2"
-							/>
-						)}
-					</div>
+					<ChatMessage
+						{...{
+							menuRef,
+							message,
+							selectedMessage,
+							setSelectedMessage,
+						}}
+					/>
 				))}
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">

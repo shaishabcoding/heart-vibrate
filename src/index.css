@@ -69,6 +69,26 @@ font[size="3"] {
 	pointer-events: none !important;
 }
 
+/* Hide the Google Translate loading spinner */
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-ZVi9od-aZ2wEe {
+	display: none !important;
+	visibility: hidden !important;
+	opacity: 0 !important;
+	width: 0 !important;
+	height: 0 !important;
+	position: absolute !important;
+	pointer-events: none !important;
+}
+
+[translate='no'],
+.notranslate {
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+}
+
 body {
 	top: 0 !important;
 }
