@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from 'react';
 import { getCookie } from '@/lib/getCookie';
 import { languages } from '@/lib/languages';
+import MovingBorder from '../ui/moving-border';
 
 const GoogleTranslate = () => {
 	const [open, setOpen] = useState(false);
@@ -46,20 +47,23 @@ const GoogleTranslate = () => {
 			open={open}
 			onOpenChange={setOpen}
 		>
-			<PopoverTrigger asChild>
-				<Button
-					translate="no"
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					className="w-[200px] justify-between"
-				>
-					{value
-						? languages.find((lang) => lang.code === value)?.name
-						: 'Select Language'}
-					<ChevronsUpDown className="opacity-50" />
-				</Button>
-			</PopoverTrigger>
+			<MovingBorder>
+				<PopoverTrigger asChild>
+					<Button
+						translate="no"
+						variant="outline"
+						role="combobox"
+						aria-expanded={open}
+						className="rounded-sm bg-white border-0 relative pr-6"
+					>
+						{value
+							? languages.find((lang) => lang.code === value)
+									?.name
+							: 'Select Language'}
+						<ChevronsUpDown className="opacity-50 absolute right-0" />
+					</Button>
+				</PopoverTrigger>
+			</MovingBorder>
 			<PopoverContent className="w-[200px] p-0">
 				<Command>
 					<CommandInput placeholder="Search language..." />

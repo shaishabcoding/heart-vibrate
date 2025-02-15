@@ -1,140 +1,60 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
-import React from "react";
-import {
-  motion,
-  useAnimationFrame,
-  useMotionTemplate,
-  useMotionValue,
-  useTransform,
-} from "framer-motion";
-import { useRef } from "react";
-import { cn } from "@/lib/utils";
+import { useMotionTemplate, useMotionValue, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
-export default function MovingBorder({
-  borderRadius = "1.75rem",
-  children,
-  as: Component = "button",
-  containerClassName,
-  borderClassName,
-  duration,
-  className,
-  ...otherProps
-}: {
-  borderRadius?: string;
-  children: React.ReactNode;
-  as?: any;
-  containerClassName?: string;
-  borderClassName?: string;
-  duration?: number;
-  className?: string;
-  [key: string]: any;
-}) {
-  return (
-    <Component
-      className={cn(
-        "bg-transparent relative text-xl p-[1px] overflow-hidden",
-        containerClassName
-      )}
-      style={{
-        borderRadius: borderRadius,
-      }}
-      {...otherProps}
-    >
-      <div
-        className="absolute inset-0"
-        style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
-      >
-        <MovingBorderFn duration={duration} rx="30%" ry="30%">
-          <div
-            className={cn(
-              "h-20 w-20 opacity-[0.8] bg-[radial-gradient(var(--sky-500)_40%,transparent_60%)]",
-              borderClassName
-            )}
-          />
-        </MovingBorderFn>
-      </div>
-
-      <div
-        className={cn(
-          "relative bg-slate-900/[0.8] border border-slate-800 backdrop-blur-xl text-white flex items-center justify-center w-full h-full text-sm antialiased",
-          className
-        )}
-        style={{
-          borderRadius: `calc(${borderRadius} * 0.96)`,
-        }}
-      >
-        {children}
-      </div>
-    </Component>
-  );
+interface MovingBorderProps extends React.HTMLAttributes<HTMLDivElement> {
+	radius?: number;
+	borderColor?: string;
+	borderWidth?: number;
+	className?: string;
 }
 
-const MovingBorderFn = ({
-  children,
-  duration = 2000,
-  rx,
-  ry,
-  ...otherProps
-}: {
-  children: React.ReactNode;
-  duration?: number;
-  rx?: string;
-  ry?: string;
-  [key: string]: any;
+/**
+ * MovingBorder component creates a dynamic hover border effect around its children.
+ */
+const MovingBorder: React.FC<MovingBorderProps> = ({
+	children,
+	radius = 100,
+	borderColor = 'var(--blue-500)',
+	borderWidth = 2,
+	className,
+	...props
 }) => {
-  const pathRef = useRef<any>();
-  const progress = useMotionValue<number>(0);
+	const [visible, setVisible] = React.useState(false);
+	const mouseX = useMotionValue(0);
+	const mouseY = useMotionValue(0);
 
-  useAnimationFrame((time) => {
-    const length = pathRef.current?.getTotalLength();
-    if (length) {
-      const pxPerMillisecond = length / duration;
-      progress.set((time * pxPerMillisecond) % length);
-    }
-  });
+	function handleMouseMove({ currentTarget, clientX, clientY }: any) {
+		const { left, top } = currentTarget.getBoundingClientRect();
+		mouseX.set(clientX - left);
+		mouseY.set(clientY - top);
+	}
 
-  const x = useTransform(
-    progress,
-    (val) => pathRef.current?.getPointAtLength(val).x
-  );
-  const y = useTransform(
-    progress,
-    (val) => pathRef.current?.getPointAtLength(val).y
-  );
-
-  const transform = useMotionTemplate`translateX(${x}px) translateY(${y}px) translateX(-50%) translateY(-50%)`;
-
-  return (
-    <>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="none"
-        className="absolute h-full w-full"
-        width="100%"
-        height="100%"
-        {...otherProps}
-      >
-        <rect
-          fill="none"
-          width="100%"
-          height="100%"
-          rx={rx}
-          ry={ry}
-          ref={pathRef}
-        />
-      </svg>
-      <motion.div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          display: "inline-block",
-          transform,
-        }}
-      >
-        {children}
-      </motion.div>
-    </>
-  );
+	return (
+		<motion.div
+			style={{
+				background: useMotionTemplate`
+          radial-gradient(
+            ${
+				visible ? radius + 'px' : '0px'
+			} circle at ${mouseX}px ${mouseY}px,
+            ${borderColor},
+            transparent 80%
+          )
+        `,
+			}}
+			onMouseMove={handleMouseMove}
+			onMouseEnter={() => setVisible(true)}
+			onMouseLeave={() => setVisible(false)}
+			className={cn(
+				`relative p-[${borderWidth}px] rounded-lg transition duration-300`,
+				className
+			)}
+			{...props}
+		>
+			{children}
+		</motion.div>
+	);
 };
+
+export default MovingBorder;
