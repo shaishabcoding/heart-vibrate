@@ -20,7 +20,9 @@ const ChatBox = () => {
 		},
 	]);
 	const [newMessage, setNewMessage] = useState('');
-	const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
+	const [selectedMessage, setSelectedMessage] = useState<
+		number | string | null
+	>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {

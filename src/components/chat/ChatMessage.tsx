@@ -11,9 +11,9 @@ import { useEffect, useState } from 'react';
 interface ChatMessageProps {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	message: any;
-	selectedMessage: string | null;
+	selectedMessage: string | number | null;
 	menuRef: React.RefObject<HTMLDivElement>;
-	setSelectedMessage: (msg: string | null) => void;
+	setSelectedMessage: (msg: string | number | null) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
