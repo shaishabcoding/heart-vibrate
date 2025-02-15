@@ -99,6 +99,7 @@ const ChatBox = () => {
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">
 				<div className="flex items-center">
 					<input
+						translate="yes"
 						type="text"
 						className="flex-1 p-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 						placeholder="Type your message..."
