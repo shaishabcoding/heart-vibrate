@@ -17,22 +17,7 @@ import {
 } from '@/components/ui/popover';
 import { useEffect, useState } from 'react';
 import { getCookie } from '@/lib/getCookie';
-
-const languages = [
-	{ code: 'en', name: 'English' },
-	{ code: 'bn', name: 'Bangla (বাংলা)' },
-	{ code: 'hi', name: 'Hindi (हिन्दी)' },
-	{ code: 'es', name: 'Spanish (Español)' },
-	{ code: 'ar', name: 'Arabic (العربية)' },
-	{ code: 'fr', name: 'French (Français)' },
-	{ code: 'zh-CN', name: 'Chinese (中文)' },
-	{ code: 'ru', name: 'Russian (Русский)' },
-	{ code: 'pt', name: 'Portuguese (Português)' },
-	{ code: 'ur', name: 'Urdu (اردو)' },
-	{ code: 'de', name: 'German (Deutsch)' },
-	{ code: 'ja', name: 'Japanese (日本語)' },
-	{ code: 'it', name: 'Italian (Italiano)' },
-];
+import { languages } from '@/lib/languages';
 
 const GoogleTranslate = () => {
 	const [open, setOpen] = useState(false);
