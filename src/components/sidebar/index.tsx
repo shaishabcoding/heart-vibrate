@@ -99,7 +99,10 @@ export default function Sidebar() {
 									href: '#',
 									icon: (
 										<img
-											src={user?.avatar}
+											src={
+												import.meta.env.VITE_BASE_URL +
+												user?.avatar
+											}
 											className="h-7 w-7 flex-shrink-0 rounded-full"
 											alt="Avatar"
 										/>
