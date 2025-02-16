@@ -17,7 +17,7 @@ const baseQuery = fetchBaseQuery({
 	prepareHeaders(headers, { getState }) {
 		const { token } = (getState() as RootState).auth;
 		if (token) {
-			headers.set('authorization', token);
+			headers.set('authorization', `Bearer ${token}`);
 		}
 		return headers;
 	},
@@ -48,11 +48,14 @@ const customBaseQuery: BaseQueryFn<
 		const fetchRefreshToken = await fetch(
 			`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
 			{
-				method: 'POST',
+				method: 'GET',
 				credentials: 'include',
 			}
 		);
+
 		const refreshResult = await fetchRefreshToken.json();
+
+		console.log(refreshResult);
 
 		if (refreshResult.data) {
 			const userData = (api.getState() as RootState).auth.user;
