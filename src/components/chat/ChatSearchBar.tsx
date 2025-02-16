@@ -17,6 +17,7 @@ const ChatSearchBar = () => {
 	const [selectedUsers, setSelectedUsers] = useState<Partial<TUser>[]>([]);
 	const [groupName, setGroupName] = useState('');
 	const [groupImage, setGroupImage] = useState<File | null>(null);
+	const [preview, setPreview] = useState<string | null>(null);
 	const searchRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +75,10 @@ const ChatSearchBar = () => {
 	// Handle image selection
 	const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
-		if (file) setGroupImage(file);
+		if (file) {
+			setGroupImage(file);
+			setPreview(URL.createObjectURL(file));
+		}
 	};
 
 	return (
@@ -122,6 +126,7 @@ const ChatSearchBar = () => {
 						.map((user) => (
 							<MovingBorder key={user._id}>
 								<button
+									translate="no"
 									onClick={() => handleSelect(user)}
 									className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 group w-full border-0"
 								>
@@ -134,7 +139,7 @@ const ChatSearchBar = () => {
 										className="w-8 h-8 bg-white border rounded-md"
 									/>
 									<span
-										translate="yes"
+										translate="no"
 										className="text-sm"
 									>
 										{user.name!.firstName}{' '}
@@ -151,9 +156,13 @@ const ChatSearchBar = () => {
 			{selectedUsers.length > 0 && (
 				<div className="mt-3 p-2 border rounded-md bg-gray-100">
 					<p className="text-sm font-semibold mb-2">
-						Selected Users: {selectedUsers.length}
+						Selected Users:{' '}
+						<span translate="no">{selectedUsers.length}</span>
 					</p>
-					<div className="flex flex-wrap gap-1 max-h-[165px] overflow-y-auto">
+					<div
+						translate="no"
+						className="flex flex-wrap gap-1 max-h-[165px] overflow-y-auto"
+					>
 						{selectedUsers.map((user) => (
 							<MovingBorder key={user._id}>
 								<div className="flex items-center gap-2 px-3 py-1 bg-white shadow rounded-md border">
@@ -199,7 +208,15 @@ const ChatSearchBar = () => {
 							onChange={handleImageChange}
 							className="hidden"
 						/>
-						<IconPhoto className="text-blue-500" />
+						{preview ? (
+							<img
+								src={preview}
+								alt="Preview"
+								className="w-10 h-10 rounded-full object-cover"
+							/>
+						) : (
+							<IconPhoto className="text-blue-500" />
+						)}
 						<span className="text-sm">
 							{groupImage
 								? groupImage.name
@@ -216,10 +233,12 @@ const ChatSearchBar = () => {
 						onClick={handlePairUsers}
 						className="w-full py-2 bg-blue-400 text-white rounded-md border-blue-500 transition flex items-center justify-between group"
 					>
-						{selectedUsers.length === 1
-							? 'Send Message'
-							: 'Create Group'}
-						<IconUsersGroup className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
+						Start messaging
+						{selectedUsers.length < 2 ? (
+							<IconMessage className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
+						) : (
+							<IconUsersGroup className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
+						)}
 					</button>
 				</MovingBorder>
 			)}
