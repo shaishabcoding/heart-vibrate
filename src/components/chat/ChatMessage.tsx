@@ -66,7 +66,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 					>
 						{displayText}
 					</span>
-					<span className="hidden group-hover:inline-block">
+					<span
+						translate="yes"
+						className="hidden group-hover:inline-block"
+					>
 						{message.date}
 					</span>
 				</div>

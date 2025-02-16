@@ -89,7 +89,7 @@ export default function Sidebar() {
 						</div>
 					</div>
 					{user && (
-						<div>
+						<div translate="no">
 							<SidebarLink
 								link={{
 									label:
