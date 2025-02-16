@@ -1,6 +1,7 @@
 import { IconBrandTelegram } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
+import { MovingBorder } from '../ui/MovingBorder';
 
 const ChatBox = () => {
 	const [messages, setMessages] = useState([
@@ -24,6 +25,8 @@ const ChatBox = () => {
 		number | string | null
 	>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
+	const sendBtnRef = useRef<HTMLButtonElement>(null);
+	const messagesEndRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -41,6 +44,14 @@ const ChatBox = () => {
 		};
 	}, [menuRef]);
 
+	useEffect(() => {
+		setTimeout(() => {
+			if (messagesEndRef.current) {
+				messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+			}
+		}, 100); // Delay ensures UI updates first
+	}, [messages]);
+
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
 			setMessages([
@@ -54,6 +65,21 @@ const ChatBox = () => {
 				},
 			]);
 			setNewMessage('');
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+
+			if (sendBtnRef.current) {
+				sendBtnRef.current.classList.add('animate-click');
+
+				setTimeout(() => {
+					sendBtnRef.current?.classList.remove('animate-click');
+					sendBtnRef.current?.click();
+				}, 100);
+			}
 		}
 	};
 
@@ -95,26 +121,31 @@ const ChatBox = () => {
 						}}
 					/>
 				))}
+
+				{/* Invisible div for scrolling */}
+				<div ref={messagesEndRef} />
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">
-				<div className="flex items-center">
+				<div className="flex items-center space-x-2">
 					<input
-						translate="yes"
+						autoFocus
 						type="text"
-						className="flex-1 p-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+						className="w-full p-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 						placeholder="Type your message..."
 						value={newMessage}
 						onChange={(e) => setNewMessage(e.target.value)}
-						onKeyPress={(e) =>
-							e.key === 'Enter' && handleSendMessage()
-						}
+						onKeyDown={handleKeyDown}
 					/>
-					<button
-						className="ml-2 p-2 text-white rounded-lg flex justify-center bg-blue-600"
-						onClick={handleSendMessage}
-					>
-						<IconBrandTelegram className="inline" />
-					</button>
+					<MovingBorder>
+						<button
+							className="flex items-center gap-1 group bg-sky-400 border-sky-500 text-white"
+							ref={sendBtnRef}
+							onClick={handleSendMessage}
+						>
+							Send{' '}
+							<IconBrandTelegram className="group-hover:translate-x-1 transition" />
+						</button>
+					</MovingBorder>
 				</div>
 			</div>
 		</div>
