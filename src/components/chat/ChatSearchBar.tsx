@@ -98,10 +98,10 @@ const ChatSearchBar = () => {
 					{isFetching && (
 						<p className="text-gray-500 p-2">Loading users...</p>
 					)}
-					{error && (
+					{!isFetching && error && (
 						<p className="text-red-500 p-2">Error fetching users</p>
 					)}
-					{!data?.data?.length && (
+					{!isFetching && !data?.data?.length && (
 						<p className="text-gray-500 p-2">No users found.</p>
 					)}
 					{(data?.data as Partial<TUser>[])
