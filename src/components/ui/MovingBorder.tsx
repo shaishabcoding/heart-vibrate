@@ -6,12 +6,14 @@ interface MovingBorderProps {
 	children: React.ReactNode;
 	radius?: number;
 	color?: string;
+	className?: string;
 }
 
 const MovingBorder: React.FC<MovingBorderProps> = ({
 	children,
 	radius = 100,
 	color = '#60a5fa',
+	className = '',
 }) => {
 	const [visible, setVisible] = useState(false);
 
@@ -41,7 +43,7 @@ const MovingBorder: React.FC<MovingBorderProps> = ({
 			onMouseMove={handleMouseMove}
 			onMouseEnter={() => setVisible(true)}
 			onMouseLeave={() => setVisible(false)}
-			className="p-[2px] rounded-lg transition duration-300"
+			className={`p-[2px] rounded-lg transition duration-300 ${className}`}
 		>
 			{children}
 		</motion.div>
