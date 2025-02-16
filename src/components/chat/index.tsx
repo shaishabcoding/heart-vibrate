@@ -1,20 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
 import { IconBrandTelegram, IconSearch, IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { Link, Outlet } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Button } from '../ui/button';
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from '../ui/command';
-import { languages } from '@/lib/languages';
+import { useSearchUsersQuery } from '@/redux/features/user/userApi';
+import { SearchIcon } from 'lucide-react';
+import ChatSearchBar from './ChatSearchBar';
 
 const data = [
 	{
@@ -37,7 +29,8 @@ const data = [
 		_id: 'lkdsjaflkjsdlkj',
 		logo: 'https://picsum.photos/200',
 		name: 'Alice Johnson',
-		lastMessage: "Let's catch up later.",
+		lastMessage:
+			"Let's catch up later. salkdfjsd klsdajfkl sdakljsdakl fjsda fklj sdkalj fklsdjafkl jsdaklfjkl dsajflk ;jsdaklfj klsdajflk dsalkfj dsklajf lkadsjkl ",
 		isActive: true,
 		isRead: false,
 	},
@@ -78,9 +71,9 @@ export default function ChatSidebar() {
 				open={open}
 				setOpen={setOpen}
 			>
-				<SidebarBody className="min-w-fit border-gray-200">
+				<SidebarBody className="min-w-[77px] max-w-sm border-gray-200">
 					<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-						{open ? <SearchBar /> : <SearchIcon />}
+						{open ? <ChatSearchBar /> : <SearchIcon />}
 						<div className="mt-8 flex flex-col gap-2">
 							{data?.map(
 								(
@@ -115,7 +108,7 @@ export default function ChatSidebar() {
 													<img
 														src={logo}
 														alt="logo"
-														className="h-10 w-10 rounded-full"
+														className="h-10 w-10 bg-white border rounded-md"
 													/>
 													{isActive && (
 														<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
@@ -134,7 +127,11 @@ export default function ChatSidebar() {
 															translate="no"
 															className="text-xs text-gray-400"
 														>
-															{lastMessage}
+															{lastMessage.slice(
+																0,
+																20
+															)}
+															...
 														</p>
 													</div>
 												)}
@@ -157,7 +154,7 @@ export default function ChatSidebar() {
 											<img
 												src={logo}
 												alt="logo"
-												className={`h-10 w-10 rounded-full ${
+												className={`h-10 w-10 bg-white border rounded-md ${
 													!isRead &&
 													'border-4 border-blue-300'
 												}`}
@@ -178,60 +175,3 @@ export default function ChatSidebar() {
 		</div>
 	);
 }
-
-const SearchBar = () => {
-	return (
-		<Popover>
-			<MovingBorder>
-				<PopoverTrigger asChild>
-					<Button
-						translate="no"
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						className="rounded-sm bg-white border-0 relative pr-6 w-full"
-					>
-						<span className="absolute left-2">
-							Search a user...
-						</span>
-						<IconSearch className="opacity-50 absolute right-1" />
-					</Button>
-				</PopoverTrigger>
-			</MovingBorder>
-			<PopoverContent className="w-full p-0">
-				<Command>
-					<CommandInput placeholder="Search user..." />
-					<CommandList translate="no">
-						<CommandEmpty>No user found.</CommandEmpty>
-						<CommandGroup>
-							{languages.map((lang) => (
-								<CommandItem
-									className="relative active:animate-click"
-									key={lang.code}
-									value={lang.code}
-									onSelect={(currentValue) => {
-										//TODO:
-									}}
-								>
-									{lang.name}
-									<IconBrandTelegram className="absolute right-1" />
-								</CommandItem>
-							))}
-						</CommandGroup>
-					</CommandList>
-				</Command>
-			</PopoverContent>
-		</Popover>
-	);
-};
-
-export const SearchIcon = () => {
-	return (
-		<Link
-			to="#"
-			className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20 w-full justify-center"
-		>
-			<IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-		</Link>
-	);
-};
