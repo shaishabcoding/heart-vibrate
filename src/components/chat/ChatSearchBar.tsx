@@ -26,7 +26,7 @@ const ChatSearchBar = () => {
 	const searchQuery =
 		search.length > 0
 			? { search, removeId: currentUserId }
-			: { search: '' };
+			: { search: '', removeId: currentUserId };
 
 	const { data, error, isFetching } = useSearchUsersQuery(searchQuery);
 
