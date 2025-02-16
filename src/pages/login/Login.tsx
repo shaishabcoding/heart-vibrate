@@ -41,7 +41,6 @@ export default function Login() {
 			navigate('/chat', { replace: true });
 		} catch (error) {
 			console.log(error);
-			toast.error('An error occurred', { id: toastId });
 		}
 	};
 
