@@ -35,12 +35,13 @@ export default function Login() {
 				password: data.password,
 			}).unwrap();
 
-			toast.success('Login successfully', { id: toastId });
 			dispatch(setUser(result.data));
 
+			toast.success('Login successfully', { id: toastId });
+
 			navigate('/chat', { replace: true });
-		} catch (error) {
-			console.log(error);
+		} catch {
+			toast.dismiss(toastId);
 		}
 	};
 

@@ -30,7 +30,7 @@ const customBaseQuery: BaseQueryFn<
 > = async (args, api, extraOptions): Promise<any> => {
 	let result = await baseQuery(args, api, extraOptions);
 
-	if (result?.error?.status)
+	if (result?.error?.status) {
 		toast.error(
 			(
 				result?.error as {
@@ -40,6 +40,9 @@ const customBaseQuery: BaseQueryFn<
 				}
 			).data?.message ?? 'Something went wrong!'
 		);
+
+		console.dir(result.error);
+	}
 
 	if (result?.error?.status === 401 || result?.error?.status === 403) {
 		const fetchRefreshToken = await fetch(

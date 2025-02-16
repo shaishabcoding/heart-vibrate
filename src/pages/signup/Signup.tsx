@@ -52,8 +52,8 @@ export default function Signup() {
 			dispatch(setUser(data.data));
 
 			toast.success(data.message, { id: toastId });
-		} catch (error) {
-			console.log(error);
+		} catch {
+			toast.dismiss(toastId);
 		}
 	};
 
