@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from 'react';
 import { MovingBorder } from '../ui/MovingBorder';
 import { TUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
+import { useChatResolveMutation } from '@/redux/features/chat/chatApi';
+import { toast } from 'sonner';
 
 const ChatSearchBar = () => {
 	const [search, setSearch] = useState('');
@@ -29,6 +31,8 @@ const ChatSearchBar = () => {
 			: { search: '', removeId: currentUserId };
 
 	const { data, error, isFetching } = useSearchUsersQuery(searchQuery);
+
+	const [chatResolve] = useChatResolveMutation();
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -65,19 +69,26 @@ const ChatSearchBar = () => {
 		setSelectedUsers(selectedUsers.filter((user) => user._id !== userId));
 	};
 
-	// Handle pairing action
-	const handlePairUsers = () => {
-		if (selectedUsers.length < 2) return; // Ensure at least two users are selected
+	const handleChatResolve = async () => {
+		const formData = new FormData();
+		const toastId = toast.loading('Resolving chat...');
 
-		console.log(
-			'Pairing users:',
-			selectedUsers.map((user) => user._id),
-			{ groupName, groupImage }
+		if (groupName) formData.append('name', groupName);
+		if (groupImage) formData.append('images', groupImage);
+		formData.append(
+			'target',
+			JSON.stringify(selectedUsers.map((u) => u._id))
 		);
-		// TODO: Call API to create a group chat with selectedUsers
+
+		try {
+			const { data } = await chatResolve(formData);
+
+			toast.success(data.message, { id: toastId });
+		} catch {
+			toast.dismiss(toastId);
+		}
 	};
 
-	// Handle image selection
 	const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (file) {
@@ -235,7 +246,7 @@ const ChatSearchBar = () => {
 			{selectedUsers.length > 0 && (
 				<MovingBorder className="mt-3">
 					<button
-						onClick={handlePairUsers}
+						onClick={handleChatResolve}
 						className="w-full py-2 bg-blue-400 text-white rounded-md border-blue-500 transition flex items-center justify-between group"
 					>
 						Start messaging
