@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { MovingBorder } from '../ui/MovingBorder';
 import { TUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 
 const ChatSearchBar = () => {
 	const [search, setSearch] = useState('');
@@ -20,10 +21,14 @@ const ChatSearchBar = () => {
 	const [preview, setPreview] = useState<string | null>(null);
 	const searchRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const currentUserId = useAppSelector((state) => state.auth.user?._id);
 
-	const { data, error, isFetching } = useSearchUsersQuery(
-		search.length > 0 ? search : ''
-	);
+	const searchQuery =
+		search.length > 0
+			? { search, removeId: currentUserId }
+			: { search: '' };
+
+	const { data, error, isFetching } = useSearchUsersQuery(searchQuery);
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
