@@ -5,6 +5,7 @@ import {
 	IconUsersGroup,
 	IconUsersPlus,
 	IconX,
+	IconPhoto,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { MovingBorder } from '../ui/MovingBorder';
@@ -14,6 +15,8 @@ const ChatSearchBar = () => {
 	const [search, setSearch] = useState('');
 	const [open, setOpen] = useState(false);
 	const [selectedUsers, setSelectedUsers] = useState<Partial<TUser>[]>([]);
+	const [groupName, setGroupName] = useState('');
+	const [groupImage, setGroupImage] = useState<File | null>(null);
 	const searchRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -62,9 +65,16 @@ const ChatSearchBar = () => {
 
 		console.log(
 			'Pairing users:',
-			selectedUsers.map((user) => user._id)
+			selectedUsers.map((user) => user._id),
+			{ groupName, groupImage }
 		);
-		// TODO: Call your API to create a chat room with selectedUsers
+		// TODO: Call API to create a group chat with selectedUsers
+	};
+
+	// Handle image selection
+	const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (file) setGroupImage(file);
 	};
 
 	return (
@@ -81,7 +91,7 @@ const ChatSearchBar = () => {
 					value={search}
 					ref={inputRef}
 					onFocus={() => {
-						setSearch(''); // Fetch all users
+						setSearch('');
 						setOpen(true);
 					}}
 					onChange={(e) => {
@@ -170,24 +180,46 @@ const ChatSearchBar = () => {
 				</div>
 			)}
 
-			{/* Pair Button */}
+			{/* Group Name & Image Input (Only if it's a group) */}
+			{selectedUsers.length >= 2 && (
+				<div className="mt-3 p-3 border rounded-md bg-gray-100">
+					<p className="text-sm font-semibold mb-2">Group Details</p>
+					<input
+						type="text"
+						placeholder="Enter group name"
+						value={groupName}
+						onChange={(e) => setGroupName(e.target.value)}
+						className="w-full p-2 border rounded-md bg-white outline-none mb-2"
+					/>
+
+					<label className="flex items-center gap-2 cursor-pointer">
+						<input
+							type="file"
+							accept="image/*"
+							onChange={handleImageChange}
+							className="hidden"
+						/>
+						<IconPhoto className="text-blue-500" />
+						<span className="text-sm">
+							{groupImage
+								? groupImage.name
+								: 'Upload group image'}
+						</span>
+					</label>
+				</div>
+			)}
+
+			{/* Pair or Create Group Button */}
 			{selectedUsers.length > 0 && (
 				<MovingBorder className="mt-3">
 					<button
 						onClick={handlePairUsers}
 						className="w-full py-2 bg-blue-400 text-white rounded-md border-blue-500 transition flex items-center justify-between group"
 					>
-						{selectedUsers.length === 1 ? (
-							<>
-								Send Message{' '}
-								<IconMessage className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
-							</>
-						) : (
-							<>
-								Create Group{' '}
-								<IconUsersGroup className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
-							</>
-						)}
+						{selectedUsers.length === 1
+							? 'Send Message'
+							: 'Create Group'}
+						<IconUsersGroup className="-translate-x-20 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition" />
 					</button>
 				</MovingBorder>
 			)}
