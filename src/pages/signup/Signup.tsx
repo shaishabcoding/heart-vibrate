@@ -7,7 +7,7 @@ import { useAppDispatch } from '@/redux/hooks';
 import { IconLogin2, IconRestore } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 type FormValues = {
@@ -21,6 +21,7 @@ type FormValues = {
 };
 
 export default function Signup() {
+	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
 	const [signup] = useRegisterMutation();
 	const {
@@ -52,6 +53,7 @@ export default function Signup() {
 			dispatch(setUser(data.data));
 
 			toast.success(data.message, { id: toastId });
+			navigate('/chat', { replace: true });
 		} catch {
 			toast.dismiss(toastId);
 		}
