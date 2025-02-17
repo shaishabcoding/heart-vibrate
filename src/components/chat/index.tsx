@@ -68,9 +68,6 @@ export default function ChatSidebar() {
 										return open ? (
 											<MovingBorder key={_id}>
 												<Link
-													onClick={() =>
-														console.log('Clicked')
-													}
 													to={_id}
 													className={`flex border active:animate-click items-center gap-2 ${
 														open
