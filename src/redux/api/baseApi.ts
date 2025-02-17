@@ -8,7 +8,7 @@ import {
 	fetchBaseQuery,
 } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
-import { logout, setUser } from '../features/auth/authSlice';
+import { logout, setToken } from '../features/auth/authSlice';
 import { toast } from 'sonner';
 
 const baseQuery = fetchBaseQuery({
@@ -30,7 +30,38 @@ const customBaseQuery: BaseQueryFn<
 > = async (args, api, extraOptions): Promise<any> => {
 	let result = await baseQuery(args, api, extraOptions);
 
-	if (result?.error?.status) {
+	if (result?.error?.status === 401 || result?.error?.status === 403) {
+		// Show a toast loading message
+		const toastId = toast.loading('Refreshing session...');
+
+		try {
+			const fetchRefreshToken = await fetch(
+				`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
+				{
+					method: 'GET',
+					credentials: 'include',
+				}
+			);
+
+			const refreshResult = await fetchRefreshToken.json();
+
+			const token = refreshResult.data?.accessToken;
+
+			if (token) {
+				api.dispatch(setToken(token));
+				// Retry the original request
+				result = await baseQuery(args, api, extraOptions);
+			} else {
+				api.dispatch(logout());
+			}
+		} catch (error) {
+			console.error('Refresh token fetch failed:', error);
+		} finally {
+			// Remove the loading toast
+			toast.dismiss(toastId);
+		}
+	} else if (result?.error?.status) {
+		// Show error toast only if not handling token refresh
 		toast.error(
 			(
 				result?.error as {
@@ -40,33 +71,9 @@ const customBaseQuery: BaseQueryFn<
 				}
 			).data?.message ?? 'Something went wrong!'
 		);
-
 		console.dir(result.error);
 	}
 
-	if (result?.error?.status === 401 || result?.error?.status === 403) {
-		const fetchRefreshToken = await fetch(
-			`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
-			{
-				method: 'GET',
-				credentials: 'include',
-			}
-		);
-
-		const refreshResult = await fetchRefreshToken.json();
-
-		console.log(refreshResult);
-
-		if (refreshResult.data) {
-			const userData = (api.getState() as RootState).auth.user;
-			api.dispatch(
-				setUser({ user: userData, token: refreshResult.data })
-			);
-			result = await baseQuery(args, api, extraOptions);
-		} else {
-			api.dispatch(logout());
-		}
-	}
 	return result;
 };
 
