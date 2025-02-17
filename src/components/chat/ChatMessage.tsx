@@ -66,7 +66,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 			<div className="relative max-w-xs">
 				<div className="flex flex-col group">
 					<div className="flex items-center justify-between gap-2">
-						<span className="font-medium">
+						<span
+							translate="no"
+							className="font-medium"
+						>
 							{message.sender.name.firstName}{' '}
 							{message.sender.name.lastName}
 						</span>
