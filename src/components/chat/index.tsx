@@ -6,19 +6,29 @@ import { Link, Outlet } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
 import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
-import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
+import {
+	useChatDeleteMutation,
+	useChatRetrieveQuery,
+} from '@/redux/features/chat/chatApi';
+import { toast } from 'sonner';
 
 export default function ChatSidebar() {
 	const { data, isLoading, isError } = useChatRetrieveQuery(null);
+	const [deleteChat] = useChatDeleteMutation();
 
 	const chats = data?.data ?? [];
 
 	const [open, setOpen] = useState(false);
-	const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.stopPropagation();
-		e.preventDefault();
+	const handleDelete = async (chatId: string) => {
+		const toastId = toast.loading('Deleting chat...');
 
-		console.log('Delete');
+		try {
+			const { data } = await deleteChat(chatId);
+
+			toast.success(data.message, { id: toastId });
+		} finally {
+			toast.dismiss(toastId);
+		}
 	};
 	return (
 		<div
@@ -113,8 +123,10 @@ export default function ChatSidebar() {
 
 													<div className="self-center grow flex justify-end">
 														<button
-															onClick={
-																handleDelete
+															onClick={() =>
+																handleDelete(
+																	_id
+																)
 															}
 															className="active:animate-click aspect-square p-2 box-border hover:border-red-600 flex items-center justify-center text-red-400 bg-red-50"
 														>
