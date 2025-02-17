@@ -9,7 +9,7 @@ import ChatSearchBar from './ChatSearchBar';
 import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
 
 export default function ChatSidebar() {
-	const { data, isLoading, isError } = useChatRetrieveQuery();
+	const { data, isLoading, isError } = useChatRetrieveQuery(null);
 
 	const chats = data?.data ?? [];
 

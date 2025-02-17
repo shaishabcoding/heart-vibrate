@@ -10,7 +10,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './redux/store';
 import Login from './pages/login/Login';
-import { SocketProvider } from './provider/SocketProvider ';
+import { SocketProvider } from './provider/SocketProvider';
 
 const router = createBrowserRouter([
 	{

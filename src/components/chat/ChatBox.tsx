@@ -2,68 +2,83 @@ import { IconBrandTelegram } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import { MovingBorder } from '../ui/MovingBorder';
+import { useMessageRetrieveQuery } from '@/redux/features/message/messageSlice';
+import { useSocket } from '@/provider/SocketProvider';
+import { useParams } from 'react-router-dom';
+import { useAppSelector } from '@/redux/hooks';
 
 const ChatBox = () => {
-	const [messages, setMessages] = useState([
-		{
-			id: 1,
-			text: 'Hello! How can I help you today?',
-			sender: 'bot',
-			logo: 'https://picsum.photos/40',
-			date: 'yesterday',
-		},
-		{
-			id: 2,
-			text: 'I need some information about your services.',
-			sender: 'user',
-			logo: 'https://picsum.photos/40',
-			date: 'yesterday',
-		},
-	]);
+	const param = useParams();
+	const { socket } = useSocket();
+	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState('');
 	const [selectedMessage, setSelectedMessage] = useState<
 		number | string | null
 	>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const sendBtnRef = useRef<HTMLButtonElement>(null);
-	const messagesEndRef = useRef<HTMLInputElement>(null);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const user = useAppSelector((state) => state.auth.user);
+
+	// Fetch messages from the API
+	const {
+		data: messageData,
+		isLoading,
+		error,
+	} = useMessageRetrieveQuery(param.id as string);
 
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				menuRef.current &&
-				!menuRef.current.contains(event.target as Node)
-			) {
-				setSelectedMessage(null);
-			}
-		};
+		if (messageData?.data) {
+			setMessages(messageData.data);
+		}
+	}, [messageData]);
 
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, [menuRef]);
+	useEffect(() => {
+		if (socket) {
+			socket.on('newMessage', (message) => {
+				setMessages((prevMessages) => [message, ...prevMessages]);
+			});
+
+			return () => {
+				socket.off('newMessage');
+			};
+		}
+	}, [socket]);
 
 	useEffect(() => {
 		setTimeout(() => {
-			if (messagesEndRef.current) {
-				messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-			}
-		}, 100); // Delay ensures UI updates first
+			messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		}, 100);
 	}, [messages]);
 
-	const handleSendMessage = () => {
+	const handleSendMessage = async () => {
 		if (newMessage.trim()) {
+			const messageData = {
+				message: newMessage,
+				sender: user, // Replace with actual user ID
+				chat: 'chat_id', // Replace with actual chat ID
+			};
+
 			setMessages([
-				{
-					id: messages.length + 1,
-					text: newMessage,
-					sender: 'user',
-					logo: 'https://picsum.photos/40',
-					date: '1 min ago',
-				},
 				...messages,
+				{ ...messageData, _id: Date.now().toString() },
 			]);
+
+			try {
+				const response = await fetch('/message', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(messageData),
+				});
+
+				if (!response.ok) throw new Error('Failed to send message');
+
+				const savedMessage = await response.json();
+				socket.emit('sendMessage', savedMessage);
+			} catch (error) {
+				console.error('Message send failed:', error);
+			}
+
 			setNewMessage('');
 		}
 	};
@@ -71,58 +86,31 @@ const ChatBox = () => {
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-
-			if (sendBtnRef.current) {
-				sendBtnRef.current.classList.add('animate-click');
-
-				setTimeout(() => {
-					sendBtnRef.current?.classList.remove('animate-click');
-					sendBtnRef.current?.click();
-				}, 100);
-			}
+			sendBtnRef.current?.click();
 		}
 	};
 
-	// const handleEditMessage = (id: number, newText: string | null) => {
-	// 	if (newText !== null) {
-	// 		setMessages(
-	// 			messages.map((message) =>
-	// 				message.id === id ? { ...message, text: newText } : message
-	// 			)
-	// 		);
-	// 	}
-	// 	setSelectedMessage(null);
-	// };
-
-	// const handleDeleteMessage = (id: number) => {
-	// 	setMessages(messages.filter((message) => message.id !== id));
-	// 	setSelectedMessage(null);
-	// };
-
-	// const handleReactMessage = (id: number, reaction: string) => {
-	// 	console.log(`Message with id ${id} reacted with ${reaction}`);
-	// 	setSelectedMessage(null);
-	// };
-
 	return (
-		<div
-			translate="no"
-			className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg"
-		>
-			<div className="flex-1 p-4 overflow-y-auto flex flex-col-reverse">
-				{messages.map((message, idx) => (
-					<ChatMessage
-						key={idx}
-						{...{
-							menuRef,
-							message,
-							selectedMessage,
-							setSelectedMessage,
-						}}
-					/>
-				))}
+		<div className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg">
+			<div className="flex-1 p-4 overflow-y-auto">
+				{isLoading ? (
+					<p>Loading messages...</p>
+				) : error ? (
+					<p className="text-red-500">Failed to load messages.</p>
+				) : (
+					messages.map((message) => (
+						<ChatMessage
+							key={message._id}
+							{...{
+								menuRef,
+								message,
+								selectedMessage,
+								setSelectedMessage,
+							}}
+						/>
+					))
+				)}
 
-				{/* Invisible div for scrolling */}
 				<div ref={messagesEndRef} />
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">

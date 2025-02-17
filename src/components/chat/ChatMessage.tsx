@@ -1,3 +1,4 @@
+import { useAppSelector } from '@/redux/hooks';
 import {
 	IconDotsVertical,
 	IconEdit,
@@ -9,7 +10,6 @@ import {
 import { useEffect, useState } from 'react';
 
 interface ChatMessageProps {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	message: any;
 	selectedMessage: string | number | null;
 	menuRef: React.RefObject<HTMLDivElement>;
@@ -22,33 +22,43 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 	menuRef,
 	setSelectedMessage,
 }) => {
+	const user = useAppSelector((state) => state.auth.user);
+	const isCurrentUser = message.sender?._id === user?._id;
+
 	const [translate, setTranslate] = useState(false);
-	const [displayText, setDisplayText] = useState(message.text);
+	const [displayText, setDisplayText] = useState(message.message);
 
 	useEffect(() => {
 		if (!translate) {
-			setDisplayText(message.text + '\u200B');
-		} else setDisplayText(message.text);
-	}, [translate, message.text]);
+			setDisplayText(message.message + '\u200B');
+		} else {
+			setDisplayText(message.message);
+		}
+	}, [translate, message.message]);
 
 	return (
 		<div
 			key={message.id}
 			className={`flex my-2 items-start ${
-				message.sender === 'user' ? 'justify-end' : 'justify-start'
+				isCurrentUser ? 'justify-end' : 'justify-start'
 			} relative`}
 		>
-			{message.sender !== 'user' && (
+			{/* Show Avatar Only for Other Users */}
+			{!isCurrentUser && (
 				<img
-					src={message.logo}
-					alt="logo"
+					src={import.meta.env.VITE_BASE_URL + message.sender.avatar}
+					alt="avatar"
 					className="h-10 w-10 rounded-full mr-2"
 				/>
 			)}
+
 			<div className="relative max-w-xs">
 				<div className="flex flex-col group">
 					<div className="flex items-center justify-between gap-2">
-						<span className="font-medium">{message.sender}</span>
+						<span className="font-medium">
+							{message.sender.name.firstName}{' '}
+							{message.sender.name.lastName}
+						</span>
 						<button
 							className="p-1 active:animate-click py-0 border-0"
 							onClick={() => setSelectedMessage(message.id)}
@@ -59,20 +69,26 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 					<span
 						translate={translate ? 'yes' : 'no'}
 						className={`${
-							message.sender === 'user'
-								? 'bg-blue-500 text-white'
-								: 'bg-gray-200 text-gray-800'
+							isCurrentUser
+								? 'bg-gray-200 text-gray-800'
+								: 'bg-blue-500 text-white'
 						} p-2 rounded-lg mt-2`}
 					>
 						{displayText}
 					</span>
-					<span
-						translate="yes"
-						className="hidden group-hover:inline-block"
-					>
-						{message.date}
-					</span>
+
+					{/* Add a placeholder for the date */}
+					{message.date && (
+						<span
+							translate="yes"
+							className="hidden group-hover:inline-block"
+						>
+							{message.date}
+						</span>
+					)}
 				</div>
+
+				{/* Context Menu for Actions */}
 				{selectedMessage === message.id && (
 					<div
 						translate="yes"
@@ -106,13 +122,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 					</div>
 				)}
 			</div>
-			{message.sender === 'user' && (
-				<img
-					src={message.logo}
-					alt="logo"
-					className="h-10 w-10 rounded-full ml-2"
-				/>
-			)}
 		</div>
 	);
 };
