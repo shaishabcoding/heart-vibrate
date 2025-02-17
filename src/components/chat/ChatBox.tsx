@@ -55,7 +55,6 @@ const ChatBox = () => {
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
 			setMessages([
-				...messages,
 				{
 					id: messages.length + 1,
 					text: newMessage,
@@ -63,6 +62,7 @@ const ChatBox = () => {
 					logo: 'https://picsum.photos/40',
 					date: '1 min ago',
 				},
+				...messages,
 			]);
 			setNewMessage('');
 		}
@@ -109,7 +109,7 @@ const ChatBox = () => {
 			translate="no"
 			className="flex flex-col h-full w-full bg-white dark:bg-gray-800 rounded-l-lg"
 		>
-			<div className="flex-1 p-4 overflow-y-auto">
+			<div className="flex-1 p-4 overflow-y-auto flex flex-col-reverse">
 				{messages.map((message, idx) => (
 					<ChatMessage
 						key={idx}
