@@ -9,6 +9,7 @@ const chatApi = baseApi.injectEndpoints({
 			}),
 			providesTags: [{ type: 'Chat', id: 'LIST' }],
 		}),
+
 		chatResolve: builder.mutation({
 			query: (formData: FormData) => ({
 				url: '/chat/resolve',
