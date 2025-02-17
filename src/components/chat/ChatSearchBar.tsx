@@ -13,6 +13,7 @@ import { TUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import { useChatResolveMutation } from '@/redux/features/chat/chatApi';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const ChatSearchBar = () => {
 	const [search, setSearch] = useState('');
@@ -24,6 +25,7 @@ const ChatSearchBar = () => {
 	const searchRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const currentUserId = useAppSelector((state) => state.auth.user?._id);
+	const nagivate = useNavigate();
 
 	const searchQuery =
 		search.length > 0
@@ -70,6 +72,9 @@ const ChatSearchBar = () => {
 	};
 
 	const handleChatResolve = async () => {
+		setSelectedUsers([]);
+		setOpen(false);
+
 		const formData = new FormData();
 		const toastId = toast.loading('Resolving chat...');
 
@@ -83,8 +88,10 @@ const ChatSearchBar = () => {
 		try {
 			const { data } = await chatResolve(formData);
 
+			nagivate(`/chat/${data.data._id}`);
+
 			toast.success(data.message, { id: toastId });
-		} catch {
+		} finally {
 			toast.dismiss(toastId);
 		}
 	};
