@@ -106,18 +106,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 						translate="yes"
 						className="absolute whitespace-nowrap w-fit top-6 right-0 mt-2 bg-white dark:bg-gray-700 shadow-lg rounded-lg z-10"
 					>
-						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
 							<IconEdit /> Edit
 						</button>
-						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
 							<IconTrash /> Delete
 						</button>
-						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
 							<IconHeart /> Like
 						</button>
 						<button
 							onClick={() => setTranslate(!translate)}
-							className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
+							className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
 						>
 							{!translate ? (
 								<>
