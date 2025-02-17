@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
 import { IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
@@ -11,12 +11,14 @@ import {
 	useChatRetrieveQuery,
 } from '@/redux/features/chat/chatApi';
 import { toast } from 'sonner';
+import { useSocket } from '@/provider/SocketProvider';
 
 export default function ChatSidebar() {
 	const { data, isLoading, isError } = useChatRetrieveQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
 	const nagivate = useNavigate();
 	const param = useParams();
+	const { socket } = useSocket();
 
 	const chats = data?.data ?? [];
 
@@ -39,6 +41,11 @@ export default function ChatSidebar() {
 			if (param.id === chatId) nagivate('/chat');
 		}
 	};
+
+	useEffect(() => {
+		socket!.emit('subscribeToInbox');
+	}, [socket]);
+
 	return (
 		<div
 			className={cn(
