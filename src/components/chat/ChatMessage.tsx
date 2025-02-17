@@ -7,23 +7,17 @@ import {
 	IconLanguageOff,
 	IconTrash,
 } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ChatMessageProps {
 	message: any;
-	selectedMessage: string | number | null;
-	menuRef: React.RefObject<HTMLDivElement>;
-	setSelectedMessage: (msg: string | number | null) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({
-	message,
-	selectedMessage,
-	menuRef,
-	setSelectedMessage,
-}) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 	const user = useAppSelector((state) => state.auth.user);
 	const isCurrentUser = message.sender?._id === user?._id;
+	const [showMenu, setShowMenu] = useState(false);
+	const menuRef = useRef<HTMLDivElement>(null);
 
 	const [translate, setTranslate] = useState(false);
 	const [displayText, setDisplayText] = useState(message.message);
@@ -35,6 +29,23 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 			setDisplayText(message.message);
 		}
 	}, [translate, message.message]);
+
+	// Handle click outside
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(event.target as Node)
+			) {
+				setShowMenu(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	return (
 		<div
@@ -60,8 +71,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 							{message.sender.name.lastName}
 						</span>
 						<button
+							onClick={() => setShowMenu((shown) => !shown)}
 							className="p-1 active:animate-click py-0 border-0"
-							onClick={() => setSelectedMessage(message.id)}
 						>
 							<IconDotsVertical size={20} />
 						</button>
@@ -89,11 +100,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 				</div>
 
 				{/* Context Menu for Actions */}
-				{selectedMessage === message.id && (
+				{showMenu && (
 					<div
-						translate="yes"
 						ref={menuRef}
-						className="absolute top-8 right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-lg z-10"
+						translate="yes"
+						className="absolute whitespace-nowrap w-fit top-6 right-0 mt-2 bg-white dark:bg-gray-700 shadow-lg rounded-lg z-10"
 					>
 						<button className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
 							<IconEdit /> Edit

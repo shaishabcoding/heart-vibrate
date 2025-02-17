@@ -12,15 +12,10 @@ const ChatBox = () => {
 	const { socket } = useSocket();
 	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState('');
-	const [selectedMessage, setSelectedMessage] = useState<
-		number | string | null
-	>(null);
-	const menuRef = useRef<HTMLDivElement>(null);
 	const sendBtnRef = useRef<HTMLButtonElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const user = useAppSelector((state) => state.auth.user);
 
-	// Fetch messages from the API
 	const {
 		data: messageData,
 		isLoading,
@@ -102,10 +97,7 @@ const ChatBox = () => {
 						<ChatMessage
 							key={message._id}
 							{...{
-								menuRef,
 								message,
-								selectedMessage,
-								setSelectedMessage,
 							}}
 						/>
 					))
