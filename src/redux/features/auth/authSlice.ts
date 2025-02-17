@@ -1,7 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type TUserRole = 'USER' | 'ADMIN';
 export type TUserGender = 'male' | 'female';
+
 export type TUser = {
 	_id: string;
 	email: string;
@@ -28,20 +29,24 @@ const authSlice = createSlice({
 	name: 'auth',
 	initialState,
 	reducers: {
-		setUser: (state, action) => {
-			const { user, token } = action.payload;
-
-			state.user = user;
-			state.token = token;
+		// Set user and token
+		setUser: (
+			state,
+			action: PayloadAction<{ user: TUser; token: string }>
+		) => {
+			state.user = action.payload.user;
+			state.token = action.payload.token;
 		},
 
-		setToken: (state, action) => {
+		// Set only the token
+		setToken: (state, action: PayloadAction<string>) => {
 			state.token = action.payload;
 		},
 
+		// Clear user data and token on logout
 		logout: (state) => {
-			state.token = null;
 			state.user = null;
+			state.token = null;
 		},
 	},
 });
