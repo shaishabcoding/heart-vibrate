@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
 import { IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useParams } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
 import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
@@ -15,11 +15,18 @@ import { toast } from 'sonner';
 export default function ChatSidebar() {
 	const { data, isLoading, isError } = useChatRetrieveQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
+	const nagivate = useNavigate();
+	const param = useParams();
 
 	const chats = data?.data ?? [];
 
 	const [open, setOpen] = useState(false);
-	const handleDelete = async (chatId: string) => {
+	const handleDelete = async (
+		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+		chatId: string
+	) => {
+		e.preventDefault();
+
 		const toastId = toast.loading('Deleting chat...');
 
 		try {
@@ -28,6 +35,8 @@ export default function ChatSidebar() {
 			toast.success(data.message, { id: toastId });
 		} finally {
 			toast.dismiss(toastId);
+
+			if (param.id === chatId) nagivate('/chat');
 		}
 	};
 	return (
@@ -53,9 +62,10 @@ export default function ChatSidebar() {
 								<p className="text-center text-red-500">
 									Failed to load chats
 								</p>
-							) : data.length === 0 ? (
+							) : chats.length === 0 ? (
 								<p className="text-center text-gray-500">
 									No chats found.
+									<img src="/empty.png" />
 								</p>
 							) : (
 								chats.map(
@@ -123,8 +133,9 @@ export default function ChatSidebar() {
 
 													<div className="self-center grow flex justify-end">
 														<button
-															onClick={() =>
+															onClick={(e) =>
 																handleDelete(
+																	e,
 																	_id
 																)
 															}
