@@ -18,9 +18,11 @@ import { Link, Outlet } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout } from '@/redux/features/auth/authSlice';
 import GoogleTranslate from '../translate/GoogleTranslate';
+import { useSocket } from '@/provider/SocketProvider';
 
 export default function Sidebar() {
 	const dispatch = useAppDispatch();
+	const { socket } = useSocket();
 	const user = useAppSelector((state) => state.auth.user);
 	const links = [
 		{
@@ -73,7 +75,10 @@ export default function Sidebar() {
 											<IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
 										),
 									}}
-									onClick={() => dispatch(logout())}
+									onClick={() => {
+										dispatch(logout());
+										socket?.disconnect();
+									}}
 								/>
 							) : (
 								<SidebarLink
