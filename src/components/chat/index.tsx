@@ -8,13 +8,13 @@ import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
 import {
 	useChatDeleteMutation,
-	useChatRetrieveQuery,
+	useChatListQuery,
 } from '@/redux/features/chat/chatApi';
 import { toast } from 'sonner';
 import { useSocket } from '@/provider/SocketProvider';
 
 export default function ChatSidebar() {
-	const { data, isLoading, isError, refetch } = useChatRetrieveQuery(null);
+	const { data, isLoading, isError, refetch } = useChatListQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
 	const { socket } = useSocket();
 

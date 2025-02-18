@@ -2,12 +2,22 @@ import { baseApi } from '../../api/baseApi';
 
 const chatApi = baseApi.injectEndpoints({
 	endpoints: (builder) => ({
-		chatRetrieve: builder.query({
+		chatList: builder.query({
 			query: () => ({
 				url: '/chat',
 				method: 'GET',
 			}),
 			providesTags: [{ type: 'Chat', id: 'LIST' }],
+		}),
+
+		chatRetrieve: builder.query({
+			query: (chatId: string) => ({
+				url: `/chat/${chatId}`,
+				method: 'GET',
+			}),
+			providesTags: (_result, _error, chatId) => [
+				{ type: 'Chat', id: chatId },
+			],
 		}),
 
 		chatResolve: builder.mutation({
@@ -30,7 +40,8 @@ const chatApi = baseApi.injectEndpoints({
 });
 
 export const {
-	useChatRetrieveQuery,
+	useChatListQuery,
 	useChatResolveMutation,
 	useChatDeleteMutation,
+	useChatRetrieveQuery,
 } = chatApi;
