@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+	createContext,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { useAppSelector } from '@/redux/hooks';
 import { io, Socket } from 'socket.io-client';
 
@@ -20,14 +26,27 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const token = useAppSelector((state) => state.auth.token);
-	const [socket, setSocket] = useState<Socket | null>(null);
+	const socketRef = useRef<Socket | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 
 	useEffect(() => {
-		if (!token) return;
+		// Wait until token is available
+		if (!token) {
+			console.warn(
+				'🔐 Waiting for auth token before initializing socket...'
+			);
+			return;
+		}
 
-		// Use a global window instance to avoid duplicate connections
-		if (!(window as any).socketInstance) {
+		// Ensure only one socket instance exists
+		if (!socketRef.current || socketRef.current.auth.token !== token) {
+			console.log('🛜 Initializing new socket with token:', token);
+
+			// Disconnect the previous socket if it exists
+			if (socketRef.current) {
+				socketRef.current.disconnect();
+			}
+
 			const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
 				withCredentials: true,
 				transports: ['websocket'],
@@ -37,29 +56,24 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			});
 
 			newSocket.on('connect', () => {
-				console.log('Socket connected:', newSocket.id);
+				console.log('✅ Socket connected:', newSocket.id);
 				setIsConnected(true);
 			});
 
-			newSocket.on('disconnect', () => {
-				console.log('Socket disconnected');
+			newSocket.on('disconnect', (reason) => {
+				console.log('❌ Socket disconnected:', reason);
 				setIsConnected(false);
 			});
 
-			newSocket.emit('subscribeToInbox', {});
-
-			newSocket.on('inboxMessageReceived', () => {
-				console.log('New inbox message received');
-			});
-
+			socketRef.current = newSocket;
 			(window as any).socketInstance = newSocket;
 		}
-
-		setSocket((window as any).socketInstance);
 	}, [token]);
 
 	return (
-		<SocketContext.Provider value={{ socket, isConnected }}>
+		<SocketContext.Provider
+			value={{ socket: socketRef.current, isConnected }}
+		>
 			{children}
 		</SocketContext.Provider>
 	);

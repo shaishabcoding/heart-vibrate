@@ -45,18 +45,21 @@ export default function ChatSidebar() {
 	useEffect(() => {
 		if (!socket) return;
 
-		socket.emit('subscribeToInbox', {});
+		setTimeout(() => {
+			console.log('🔄 Subscribing to chat...');
+			socket.emit('subscribeToInbox');
+		}, 1000);
 
-		socket.off('inboxMessageReceived');
-
-		socket.on('inboxMessageReceived', () => {
-			console.log('New inbox message received');
-
+		const handleNewMessage = () => {
+			console.log('📩 New inbox message received');
 			refetch();
-		});
+		};
+
+		socket.off('inboxMessageReceived', handleNewMessage);
+		socket.on('inboxMessageReceived', handleNewMessage);
 
 		return () => {
-			socket.off('inboxMessageReceived');
+			socket.off('inboxMessageReceived', handleNewMessage);
 		};
 	}, [socket, refetch]);
 

@@ -32,7 +32,10 @@ const ChatBox = () => {
 		// Ensure socket is not null before calling emit or on
 		if (!socket) return;
 
-		socket.emit('subscribeToChat', param.id);
+		setTimeout(() => {
+			console.log('🔄 Subscribing to chat...');
+			socket.emit('subscribeToChat', param.id);
+		}, 1000);
 
 		socket.on('chatMessageReceived', ({ sender, message, date, _id }) => {
 			setMessages((preMessage) => [
