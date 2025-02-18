@@ -1,3 +1,4 @@
+import { timeAgo } from '@/lib/timeAgo';
 import { useAppSelector } from '@/redux/hooks';
 import {
 	IconDotsVertical,
@@ -97,7 +98,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 							translate="yes"
 							className="hidden group-hover:inline-block"
 						>
-							{message.date}
+							{timeAgo(message.date)}
 						</span>
 					)}
 				</div>

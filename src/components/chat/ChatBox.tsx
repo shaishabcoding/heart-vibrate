@@ -29,16 +29,27 @@ const ChatBox = () => {
 	}, [messageData]);
 
 	useEffect(() => {
+		// Ensure socket is not null before calling emit or on
 		if (socket) {
-			socket.on('newMessage', (message) => {
-				setMessages((prevMessages) => [message, ...prevMessages]);
-			});
+			socket.emit('subscribeToChat', param.id);
+
+			socket.on(
+				'chatMessageReceived',
+				({ sender, message, date, _id }) => {
+					setMessages((preMessage) => [
+						...preMessage,
+						{ sender, message, date, _id },
+					]);
+				}
+			);
 
 			return () => {
-				socket.off('newMessage');
+				socket.off('chatMessageReceived');
 			};
+		} else {
+			console.log('Socket is not initialized or available.');
 		}
-	}, [socket]);
+	}, [socket, param.id]);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -51,28 +62,12 @@ const ChatBox = () => {
 			const messageData = {
 				message: newMessage,
 				sender: user, // Replace with actual user ID
-				chat: 'chat_id', // Replace with actual chat ID
 			};
 
-			setMessages([
-				...messages,
-				{ ...messageData, _id: Date.now().toString() },
-			]);
-
-			try {
-				const response = await fetch('/message', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(messageData),
-				});
-
-				if (!response.ok) throw new Error('Failed to send message');
-
-				const savedMessage = await response.json();
-				socket.emit('sendMessage', savedMessage);
-			} catch (error) {
-				console.error('Message send failed:', error);
-			}
+			socket!.emit('sendMessage', {
+				message: newMessage,
+				roomId: param.id,
+			});
 
 			setNewMessage('');
 		}

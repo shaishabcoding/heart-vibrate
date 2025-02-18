@@ -43,7 +43,7 @@ export default function ChatSidebar() {
 	};
 
 	useEffect(() => {
-		socket!.emit('subscribeToInbox');
+		if (socket) socket.emit('subscribeToInbox');
 	}, [socket]);
 
 	return (
