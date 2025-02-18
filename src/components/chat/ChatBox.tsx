@@ -11,7 +11,7 @@ import { useMessageRetrieveQuery } from '@/redux/features/message/messageSlice';
 import { useSocket } from '@/provider/SocketProvider';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
-import Img from '../ui/img';
+import Img from '@/components/ui/Img';
 
 type TMessage = { sender: string; message: string; date: string; _id: string };
 
@@ -73,7 +73,10 @@ const ChatBox = () => {
 	useEffect(() => {
 		/** Redirect to inbox if room not found */
 		if (isError)
-			if ((error as any)?.status === 404)
+			if (
+				(error as any)?.status === 404 ||
+				(error as any)?.status === 401
+			)
 				navigate('/chat', { replace: true });
 	}, [error, navigate, isError]);
 
