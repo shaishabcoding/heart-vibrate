@@ -9,6 +9,7 @@ import {
 	IconTrash,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
+import Img from '../ui/img';
 
 interface ChatMessageProps {
 	message: any;
@@ -57,8 +58,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 		>
 			{/* Show Avatar Only for Other Users */}
 			{!isCurrentUser && (
-				<img
-					src={import.meta.env.VITE_BASE_URL + message.sender.avatar}
+				<Img
+					src={message.sender.avatar}
 					alt="avatar"
 					className="h-10 w-10 rounded-full mr-2"
 				/>

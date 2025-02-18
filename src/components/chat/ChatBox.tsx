@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IconArrowNarrowLeft, IconBrandTelegram } from '@tabler/icons-react';
+import {
+	IconArrowNarrowLeft,
+	IconBrandTelegram,
+	IconSettings,
+} from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import { MovingBorder } from '../ui/MovingBorder';
@@ -12,7 +16,7 @@ import Img from '../ui/img';
 type TMessage = { sender: string; message: string; date: string; _id: string };
 
 const ChatBox = () => {
-	const param = useParams();
+	const params = useParams();
 	const { socket } = useSocket();
 	const [messages, setMessages] = useState<TMessage[]>([]);
 	const [newMessage, setNewMessage] = useState('');
@@ -26,9 +30,9 @@ const ChatBox = () => {
 		error,
 		isError,
 		refetch,
-	} = useMessageRetrieveQuery(param.id as string);
+	} = useMessageRetrieveQuery(params.chatId as string);
 
-	const { data: chatData } = useChatRetrieveQuery(param.id as string);
+	const { data: chatData } = useChatRetrieveQuery(params.chatId as string);
 
 	useEffect(() => {
 		if (messageData?.data) {
@@ -42,7 +46,7 @@ const ChatBox = () => {
 
 		setTimeout(() => {
 			console.log('🔄 Subscribing to chat...');
-			socket.emit('subscribeToChat', param.id);
+			socket.emit('subscribeToChat', params.chatId);
 		}, 1000);
 
 		socket.on('chatMessageReceived', ({ sender, message, date, _id }) => {
@@ -58,7 +62,7 @@ const ChatBox = () => {
 			socket.off('chatMessageReceived');
 			socket.off('chatUpdated');
 		};
-	}, [socket, param.id, refetch]);
+	}, [socket, params.chatId, refetch]);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -77,7 +81,7 @@ const ChatBox = () => {
 		if (newMessage.trim()) {
 			socket!.emit('sendMessage', {
 				message: newMessage,
-				roomId: param.id,
+				roomId: params.chatId,
 			});
 
 			setNewMessage('');
@@ -108,6 +112,9 @@ const ChatBox = () => {
 					/>
 					<h3 translate="no">{chatData?.data?.name}</h3>
 				</div>
+				<button className="flex items-center justify-center p-2">
+					<IconSettings className="w-6 h-6" />
+				</button>
 			</div>
 			<div className="flex-1 p-4 overflow-y-auto">
 				{isLoading ? (

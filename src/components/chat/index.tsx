@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
 import { IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useParams } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
 import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
@@ -12,15 +12,17 @@ import {
 } from '@/redux/features/chat/chatApi';
 import { toast } from 'sonner';
 import { useSocket } from '@/provider/SocketProvider';
+import Img from '../ui/img';
 
 export default function ChatSidebar() {
+	const params = useParams();
 	const { data, isLoading, isError, refetch } = useChatListQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
 	const { socket } = useSocket();
 
 	const chats = data?.data ?? [];
 
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(true);
 	const handleDelete = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 		chatId: string
@@ -89,11 +91,6 @@ export default function ChatSidebar() {
 										image = '',
 										lastMessage = 'No message',
 									}) => {
-										const logo = image
-											? import.meta.env.VITE_BASE_URL +
-											  image
-											: 'https://picsum.photos/40';
-
 										const isRead = true;
 										const isActive = false;
 
@@ -101,7 +98,7 @@ export default function ChatSidebar() {
 											<MovingBorder key={_id}>
 												<Link
 													to={_id}
-													className={`flex border active:animate-click items-center gap-2 ${
+													className={`flex border relative overflow-x-hidden items-center gap-2 ${
 														open
 															? 'p-2 rounded-md'
 															: 'rounded-full p-1'
@@ -109,12 +106,20 @@ export default function ChatSidebar() {
 														isRead
 															? 'bg-gray-100'
 															: 'bg-white'
-													} dark:bg-neutral-900 transition cursor-pointer`}
+													} dark:bg-neutral-900 transition ${
+														params.chatId === _id
+															? 'border-l-[6px] border-black cursor-not-allowed'
+															: 'cursor-pointer active:animate-click'
+													}`}
 												>
+													{params.chatId === _id && (
+														<div className="w-5 h-5 bg-black rounded-full absolute top-[50%] -translate-y-1/2 left-[-13px]"></div>
+													)}
+
 													<div className="relative">
-														<img
-															src={logo}
-															alt="logo"
+														<Img
+															src={image}
+															alt={`Image of chat: ${name}`}
 															className="h-10 w-10 bg-white border rounded-md"
 														/>
 														{isActive && (
@@ -156,19 +161,26 @@ export default function ChatSidebar() {
 											</MovingBorder>
 										) : (
 											<div
-												className="relative"
+												className="relative drop-shadow-md"
 												key={_id}
 											>
-												<img
-													src={logo}
-													alt="logo"
+												<Img
+													src={image}
+													alt={`Image of chat: ${name}`}
 													className={`h-10 w-10 bg-white border rounded-md ${
 														!isRead &&
 														'border-4 border-blue-300'
+													} ${
+														params.chatId === _id &&
+														'border-l-[4px] border-black'
 													}`}
 												/>
 												{isActive && (
 													<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
+												)}
+
+												{params.chatId === _id && (
+													<div className="w-[22px] h-5 bg-black rounded-full absolute top-[50%] -translate-y-1/2 left-[-14px]"></div>
 												)}
 											</div>
 										);
