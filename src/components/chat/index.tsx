@@ -46,8 +46,8 @@ export default function ChatSidebar() {
 		if (socket) {
 			socket.emit('subscribeToInbox');
 
-			socket.on('inboxMessageReceived', (chatData) => {
-				console.log('New inbox message:', chatData);
+			socket.on('inboxMessageReceived', () => {
+				console.log('New inbox message received');
 
 				refetch();
 			});
