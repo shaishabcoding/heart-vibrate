@@ -12,7 +12,7 @@ import {
 } from '@/redux/features/chat/chatApi';
 import { toast } from 'sonner';
 import { useSocket } from '@/provider/SocketProvider';
-import Img from '../ui/img';
+import Img from '@/components/ui/Img';
 
 export default function ChatSidebar() {
 	const params = useParams();

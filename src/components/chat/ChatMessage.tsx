@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { timeAgo } from '@/lib/timeAgo';
 import { useAppSelector } from '@/redux/hooks';
 import {
