@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { useSocket } from '@/provider/SocketProvider';
 
 export default function ChatSidebar() {
-	const { data, isLoading, isError } = useChatRetrieveQuery(null);
+	const { data, isLoading, isError, refetch } = useChatRetrieveQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
 	const nagivate = useNavigate();
 	const param = useParams();
@@ -43,14 +43,22 @@ export default function ChatSidebar() {
 	};
 
 	useEffect(() => {
-		if (socket) socket.emit('subscribeToInbox');
-	}, [socket]);
+		if (socket) {
+			socket.emit('subscribeToInbox');
+
+			socket.on('inboxMessageReceived', (chatData) => {
+				console.log('New inbox message:', chatData);
+
+				refetch();
+			});
+		}
+	}, [socket, refetch]);
 
 	return (
 		<div
 			className={cn(
 				'rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden',
-				'h-screen' // for your use case, use `h-screen` instead of `h-[60vh]`
+				'h-screen'
 			)}
 		>
 			<SBar
@@ -80,8 +88,6 @@ export default function ChatSidebar() {
 										_id,
 										name,
 										image,
-										isGroup,
-										users,
 										lastMessage = 'No message',
 									}) => {
 										const logo = image
@@ -129,11 +135,7 @@ export default function ChatSidebar() {
 																translate="no"
 																className="text-xs text-gray-400"
 															>
-																{lastMessage.slice(
-																	0,
-																	20
-																)}
-																...
+																{lastMessage}
 															</p>
 														</div>
 													)}
