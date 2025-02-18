@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IconBrandTelegram } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import { MovingBorder } from '../ui/MovingBorder';
 import { useMessageRetrieveQuery } from '@/redux/features/message/messageSlice';
 import { useSocket } from '@/provider/SocketProvider';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type TMessage = { sender: string; message: string; date: string; _id: string };
 
@@ -15,11 +16,13 @@ const ChatBox = () => {
 	const [newMessage, setNewMessage] = useState('');
 	const sendBtnRef = useRef<HTMLButtonElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
 
 	const {
 		data: messageData,
 		isLoading,
 		error,
+		isError,
 		refetch,
 	} = useMessageRetrieveQuery(param.id as string);
 
@@ -61,6 +64,13 @@ const ChatBox = () => {
 		}, 100);
 	}, [messages]);
 
+	useEffect(() => {
+		/** Redirect to inbox if room not found */
+		if (isError)
+			if ((error as any)?.status === 404)
+				navigate('/chat', { replace: true });
+	}, [error, navigate, isError]);
+
 	const handleSendMessage = async () => {
 		if (newMessage.trim()) {
 			socket!.emit('sendMessage', {
@@ -85,7 +95,10 @@ const ChatBox = () => {
 				{isLoading ? (
 					<p>Loading messages...</p>
 				) : error ? (
-					<p className="text-red-500">Failed to load messages.</p>
+					<p className="text-red-500">
+						{(error as any)?.data?.message ??
+							'Failed to load messages.'}
+					</p>
 				) : (
 					messages.map((message) => (
 						<ChatMessage

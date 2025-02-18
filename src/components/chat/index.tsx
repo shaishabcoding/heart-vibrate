@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
 import { IconTrash } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
-import { Link, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
 import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
@@ -16,8 +16,6 @@ import { useSocket } from '@/provider/SocketProvider';
 export default function ChatSidebar() {
 	const { data, isLoading, isError, refetch } = useChatRetrieveQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
-	const nagivate = useNavigate();
-	const param = useParams();
 	const { socket } = useSocket();
 
 	const chats = data?.data ?? [];
@@ -37,8 +35,6 @@ export default function ChatSidebar() {
 			toast.success(data.message, { id: toastId });
 		} finally {
 			toast.dismiss(toastId);
-
-			if (param.id === chatId) nagivate('/chat');
 		}
 	};
 
