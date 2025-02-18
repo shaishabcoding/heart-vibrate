@@ -1,10 +1,5 @@
-import React, {
-	createContext,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAppSelector } from '@/redux/hooks';
 import { io, Socket } from 'socket.io-client';
 
@@ -25,36 +20,46 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const token = useAppSelector((state) => state.auth.token);
-	const socketRef = useRef<Socket | null>(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 
 	useEffect(() => {
 		if (!token) return;
 
-		// Prevent multiple socket instances
-		if (!socketRef.current) {
-			socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
+		// Use a global window instance to avoid duplicate connections
+		if (!(window as any).socketInstance) {
+			const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
 				withCredentials: true,
 				transports: ['websocket'],
 				auth: { token },
+				reconnectionAttempts: Number.MAX_SAFE_INTEGER,
+				reconnectionDelay: 3_000,
 			});
 
-			socketRef.current.on('connect', () => setIsConnected(true));
-			socketRef.current.on('disconnect', () => setIsConnected(false));
+			newSocket.on('connect', () => {
+				console.log('Socket connected:', newSocket.id);
+				setIsConnected(true);
+			});
+
+			newSocket.on('disconnect', () => {
+				console.log('Socket disconnected');
+				setIsConnected(false);
+			});
+
+			newSocket.emit('subscribeToInbox', {});
+
+			newSocket.on('inboxMessageReceived', () => {
+				console.log('New inbox message received');
+			});
+
+			(window as any).socketInstance = newSocket;
 		}
 
-		return () => {
-			if (socketRef.current) {
-				socketRef.current.disconnect();
-				socketRef.current = null;
-			}
-		};
+		setSocket((window as any).socketInstance);
 	}, [token]);
 
 	return (
-		<SocketContext.Provider
-			value={{ socket: socketRef.current, isConnected }}
-		>
+		<SocketContext.Provider value={{ socket, isConnected }}>
 			{children}
 		</SocketContext.Provider>
 	);

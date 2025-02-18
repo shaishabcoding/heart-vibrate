@@ -5,16 +5,16 @@ import { MovingBorder } from '../ui/MovingBorder';
 import { useMessageRetrieveQuery } from '@/redux/features/message/messageSlice';
 import { useSocket } from '@/provider/SocketProvider';
 import { useParams } from 'react-router-dom';
-import { useAppSelector } from '@/redux/hooks';
+
+type TMessage = { sender: string; message: string; date: string; _id: string };
 
 const ChatBox = () => {
 	const param = useParams();
 	const { socket } = useSocket();
-	const [messages, setMessages] = useState([]);
+	const [messages, setMessages] = useState<TMessage[]>([]);
 	const [newMessage, setNewMessage] = useState('');
 	const sendBtnRef = useRef<HTMLButtonElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const user = useAppSelector((state) => state.auth.user);
 
 	const {
 		data: messageData,
@@ -54,11 +54,6 @@ const ChatBox = () => {
 
 	const handleSendMessage = async () => {
 		if (newMessage.trim()) {
-			const messageData = {
-				message: newMessage,
-				sender: user, // Replace with actual user ID
-			};
-
 			socket!.emit('sendMessage', {
 				message: newMessage,
 				roomId: param.id,

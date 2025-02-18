@@ -47,11 +47,17 @@ export default function ChatSidebar() {
 
 		socket.emit('subscribeToInbox', {});
 
+		socket.off('inboxMessageReceived');
+
 		socket.on('inboxMessageReceived', () => {
 			console.log('New inbox message received');
 
 			refetch();
 		});
+
+		return () => {
+			socket.off('inboxMessageReceived');
+		};
 	}, [socket, refetch]);
 
 	return (
@@ -85,9 +91,9 @@ export default function ChatSidebar() {
 							) : (
 								chats.map(
 									({
-										_id,
-										name,
-										image,
+										_id = '',
+										name = '',
+										image = '',
 										lastMessage = 'No message',
 									}) => {
 										const logo = image

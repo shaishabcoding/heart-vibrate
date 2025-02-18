@@ -18,7 +18,7 @@ import {
 import { useEffect, useState } from 'react';
 import { getCookie } from '@/lib/getCookie';
 import { languages } from '@/lib/languages';
-import MovingBorder from '../ui/moving-border';
+import { MovingBorder } from '../ui/MovingBorder';
 
 const GoogleTranslate = () => {
 	const [open, setOpen] = useState(false);

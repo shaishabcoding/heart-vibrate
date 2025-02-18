@@ -3,13 +3,20 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
+	plugins: [react()],
+	resolve: {
+		alias: {
+			'@': path.resolve(__dirname, './src'),
+		},
+	},
+	optimizeDeps: {
+		exclude: ['lucide-react'],
+	},
+	server: {
+		host: 'localhost',
+		port: 5173,
+		watch: {
+			usePolling: true,
+		},
+	},
 });
