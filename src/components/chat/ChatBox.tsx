@@ -30,25 +30,20 @@ const ChatBox = () => {
 
 	useEffect(() => {
 		// Ensure socket is not null before calling emit or on
-		if (socket) {
-			socket.emit('subscribeToChat', param.id);
+		if (!socket) return;
 
-			socket.on(
-				'chatMessageReceived',
-				({ sender, message, date, _id }) => {
-					setMessages((preMessage) => [
-						...preMessage,
-						{ sender, message, date, _id },
-					]);
-				}
-			);
+		socket.emit('subscribeToChat', param.id);
 
-			return () => {
-				socket.off('chatMessageReceived');
-			};
-		} else {
-			console.log('Socket is not initialized or available.');
-		}
+		socket.on('chatMessageReceived', ({ sender, message, date, _id }) => {
+			setMessages((preMessage) => [
+				...preMessage,
+				{ sender, message, date, _id },
+			]);
+		});
+
+		return () => {
+			socket.off('chatMessageReceived');
+		};
 	}, [socket, param.id]);
 
 	useEffect(() => {
