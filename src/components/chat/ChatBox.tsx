@@ -20,7 +20,10 @@ const ChatBox = () => {
 		data: messageData,
 		isLoading,
 		error,
+		refetch,
 	} = useMessageRetrieveQuery(param.id as string);
+
+	console.log(error);
 
 	useEffect(() => {
 		if (messageData?.data) {
@@ -44,10 +47,13 @@ const ChatBox = () => {
 			]);
 		});
 
+		socket.on('chatUpdated', refetch);
+
 		return () => {
 			socket.off('chatMessageReceived');
+			socket.off('chatUpdated');
 		};
-	}, [socket, param.id]);
+	}, [socket, param.id, refetch]);
 
 	useEffect(() => {
 		setTimeout(() => {
