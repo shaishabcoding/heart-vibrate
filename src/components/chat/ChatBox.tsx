@@ -142,15 +142,17 @@ const ChatBox = () => {
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">
 				<div className="flex items-center space-x-2">
-					<input
-						autoFocus
-						type="text"
-						className="w-full p-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-						placeholder="Type your message..."
-						value={newMessage}
-						onChange={(e) => setNewMessage(e.target.value)}
-						onKeyDown={handleKeyDown}
-					/>
+					<MovingBorder className="w-full">
+						<input
+							autoFocus
+							type="text"
+							className="w-full p-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							placeholder="Type your message..."
+							value={newMessage}
+							onChange={(e) => setNewMessage(e.target.value)}
+							onKeyDown={handleKeyDown}
+						/>
+					</MovingBorder>
 					<MovingBorder>
 						<button
 							className="flex items-center gap-1 group bg-sky-400 border-sky-500 text-white"
