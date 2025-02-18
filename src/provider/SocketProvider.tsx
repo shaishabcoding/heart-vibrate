@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAppSelector } from '@/redux/hooks';
 import { io, Socket } from 'socket.io-client';
 
@@ -18,21 +18,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const token = useAppSelector((state) => state.auth.token);
-	const socketRef = useRef<Socket | null>(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
-		// Wait until token is available
-		if (!token) {
-			console.warn(
-				'🔐 Waiting for auth token before initializing socket...'
-			);
-			return;
-		}
+		if (!token) return;
 
-		// Ensure only one socket instance exists
-		if (!socketRef.current) {
-			console.log('🛜 Initializing new socket with token:', token);
-
+		// Use a global window instance to avoid duplicate connections
+		if (!(window as any).socketInstance) {
 			const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
 				withCredentials: true,
 				transports: ['websocket'],
@@ -42,20 +34,21 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			});
 
 			newSocket.on('connect', () => {
-				console.log('✅ Socket connected:', newSocket.id);
+				console.log('Socket connected:', newSocket.id);
 			});
 
-			newSocket.on('disconnect', (reason) => {
-				console.log('❌ Socket disconnected:', reason);
+			newSocket.on('disconnect', () => {
+				console.log('Socket disconnected');
 			});
 
-			socketRef.current = newSocket;
 			(window as any).socketInstance = newSocket;
 		}
+
+		setSocket((window as any).socketInstance);
 	}, [token]);
 
 	return (
-		<SocketContext.Provider value={{ socket: socketRef.current }}>
+		<SocketContext.Provider value={{ socket }}>
 			{children}
 		</SocketContext.Provider>
 	);
