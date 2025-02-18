@@ -112,10 +112,6 @@ export default function ChatSidebar() {
 															: 'cursor-pointer active:animate-click'
 													}`}
 												>
-													{params.chatId === _id && (
-														<div className="w-5 h-5 bg-black rounded-full absolute top-[50%] -translate-y-1/2 left-[-13px]"></div>
-													)}
-
 													<div className="relative">
 														<Img
 															src={image}
@@ -167,20 +163,16 @@ export default function ChatSidebar() {
 												<Img
 													src={image}
 													alt={`Image of chat: ${name}`}
-													className={`h-10 w-10 bg-white border rounded-md ${
+													className={`h-10 w-10 object-cover bg-white border rounded-md ${
 														!isRead &&
 														'border-4 border-blue-300'
 													} ${
 														params.chatId === _id &&
-														'border-l-[4px] border-black'
+														'border-l-[6px] border-black p-1'
 													}`}
 												/>
 												{isActive && (
 													<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-												)}
-
-												{params.chatId === _id && (
-													<div className="w-[22px] h-5 bg-black rounded-full absolute top-[50%] -translate-y-1/2 left-[-14px]"></div>
 												)}
 											</div>
 										);
