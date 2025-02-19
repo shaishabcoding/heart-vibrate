@@ -158,15 +158,6 @@ const ChatBox = () => {
 								.map((user: any) => user._id)
 								.includes(userId)
 						) {
-							console.log(
-								message.readBy
-									.map((user: any) => user._id)
-									.includes(userId),
-
-								message.readBy.map((user: any) => user._id),
-								userId
-							);
-
 							socket!.emit('markMessageAsRead', {
 								messageId: message._id,
 								chatId: params.chatId,

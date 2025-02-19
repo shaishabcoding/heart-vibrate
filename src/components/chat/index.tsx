@@ -88,7 +88,7 @@ export default function ChatSidebar() {
 		socket.connect();
 
 		setTimeout(() => {
-			console.log('🔄 Subscribing to chat...');
+			console.log('🔄 Subscribing to inbox...');
 			socket.emit('subscribeToInbox');
 		}, 1000);
 
