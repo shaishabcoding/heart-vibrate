@@ -11,6 +11,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './redux/store';
 import Login from './pages/login/Login';
 import { SocketProvider } from './provider/SocketProvider';
+import AuthProvider from './provider/AuthProvider';
 
 const router = createBrowserRouter([
 	{
@@ -19,7 +20,13 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: 'chat',
-				element: <Chat />,
+				element: (
+					<AuthProvider>
+						<SocketProvider>
+							<Chat />
+						</SocketProvider>
+					</AuthProvider>
+				),
 				children: [
 					{
 						path: ':chatId',
@@ -46,9 +53,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
 				loading="loading auth"
 				persistor={persistor}
 			>
-				<SocketProvider>
-					<RouterProvider router={router} />
-				</SocketProvider>
+				<RouterProvider router={router} />
 			</PersistGate>
 		</Provider>
 	</React.StrictMode>

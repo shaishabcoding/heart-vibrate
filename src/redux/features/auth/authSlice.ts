@@ -47,6 +47,11 @@ const authSlice = createSlice({
 		logout: (state) => {
 			state.user = null;
 			state.token = null;
+
+			fetch(`${import.meta.env.VITE_BASE_URL}/auth/logout`, {
+				method: 'POST',
+				credentials: 'include',
+			});
 		},
 	},
 });

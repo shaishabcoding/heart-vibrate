@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { io, Socket } from 'socket.io-client';
+import { logout, setToken } from '@/redux/features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { baseApi } from '@/redux/api/baseApi';
 
 interface SocketContextType {
 	socket: Socket | null;
@@ -18,6 +22,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const token = useAppSelector((state) => state.auth.token);
+	const dispatch = useAppDispatch();
+	const navigate = useNavigate();
 	const [socket, setSocket] = useState<Socket | null>(null);
 
 	useEffect(() => {
@@ -37,6 +43,43 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				console.log('Socket connected:', newSocket.id);
 			});
 
+			newSocket.on('tokenExpired', async () => {
+				const toastId = toast.loading('Refreshing session...');
+
+				try {
+					const response = await fetch(
+						`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
+						{
+							method: 'GET',
+							credentials: 'include',
+						}
+					);
+
+					const refreshResult = await response.json();
+					const newToken = refreshResult.data?.accessToken;
+
+					if (newToken) {
+						dispatch(setToken(newToken));
+						newSocket.auth = { token: newToken };
+						newSocket.connect();
+					} else {
+						dispatch(logout());
+						dispatch(baseApi.util.invalidateTags([]));
+						setTimeout(() => {
+							navigate('/login', { replace: true });
+						}, 1000);
+					}
+				} catch {
+					dispatch(logout());
+					dispatch(baseApi.util.invalidateTags([]));
+					setTimeout(() => {
+						navigate('/login', { replace: true });
+					}, 1000);
+				} finally {
+					toast.dismiss(toastId);
+				}
+			});
+
 			newSocket.on('disconnect', () => {
 				console.log('Socket disconnected');
 			});
@@ -45,7 +88,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 
 		setSocket((window as any).socketInstance);
-	}, [token]);
+	}, [token, dispatch, navigate]);
 
 	return (
 		<SocketContext.Provider value={{ socket }}>

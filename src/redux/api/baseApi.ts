@@ -53,6 +53,8 @@ const customBaseQuery: BaseQueryFn<
 				result = await baseQuery(args, api, extraOptions);
 			} else {
 				api.dispatch(logout());
+				api.dispatch(baseApi.util.invalidateTags([]));
+				window.location.href = '/login';
 			}
 		} catch (error) {
 			console.error('Refresh token fetch failed:', error);
