@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-	IconArrowNarrowLeft,
-	IconBrandTelegram,
-	IconSettings,
-} from '@tabler/icons-react';
+import { IconArrowNarrowLeft, IconBrandTelegram } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import { MovingBorder } from '../ui/MovingBorder';
@@ -13,6 +9,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
 import Img from '@/components/ui/Img';
 import { useAppSelector } from '@/redux/hooks';
+import GroupSetting from './GroupSetting';
 
 type TMessage = {
 	sender: string;
@@ -142,11 +139,7 @@ const ChatBox = () => {
 				{chatData?.data?.isGroup &&
 					chatData?.data?.admins.some(
 						(admin: any) => admin._id === userId
-					) && (
-						<button className="flex items-center justify-center p-2">
-							<IconSettings className="w-6 h-6" />
-						</button>
-					)}
+					) && <GroupSetting />}
 			</div>
 			<div className="flex-1 p-4 overflow-y-auto">
 				{isLoading ? (
