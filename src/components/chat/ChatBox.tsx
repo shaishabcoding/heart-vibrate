@@ -139,9 +139,14 @@ const ChatBox = () => {
 					/>
 					<h3 translate="no">{chatData?.data?.name}</h3>
 				</div>
-				<button className="flex items-center justify-center p-2">
-					<IconSettings className="w-6 h-6" />
-				</button>
+				{chatData?.data?.isGroup &&
+					chatData?.data?.admins.some(
+						(admin: any) => admin._id === userId
+					) && (
+						<button className="flex items-center justify-center p-2">
+							<IconSettings className="w-6 h-6" />
+						</button>
+					)}
 			</div>
 			<div className="flex-1 p-4 overflow-y-auto">
 				{isLoading ? (
