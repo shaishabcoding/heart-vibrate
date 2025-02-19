@@ -127,8 +127,8 @@ export default function ChatSidebar() {
 									lastMessageTime = '',
 									updatedAt = '',
 									sender = '',
+									unRead = false,
 								}) => {
-									const isRead = true;
 									const isActive = onlineUsers.has(sender);
 
 									return (
@@ -141,7 +141,7 @@ export default function ChatSidebar() {
 												className={`flex border relative overflow-x-hidden items-center gap-2 p-2 rounded-md ${
 													contextMenu?.chatId === _id
 														? 'bg-blue-100'
-														: isRead
+														: !unRead
 														? 'bg-gray-100'
 														: 'bg-white'
 												} dark:bg-neutral-900 transition ${

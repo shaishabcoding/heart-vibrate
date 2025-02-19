@@ -12,8 +12,15 @@ import { useSocket } from '@/provider/SocketProvider';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
 import Img from '@/components/ui/Img';
+import { useAppSelector } from '@/redux/hooks';
 
-type TMessage = { sender: string; message: string; date: string; _id: string };
+type TMessage = {
+	sender: string;
+	message: string;
+	date: string;
+	_id: string;
+	readBy: string[];
+};
 
 const ChatBox = () => {
 	const params = useParams();
@@ -23,6 +30,7 @@ const ChatBox = () => {
 	const sendBtnRef = useRef<HTMLButtonElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const navigate = useNavigate();
+	const userId = useAppSelector((state) => state.auth.user?._id);
 
 	const {
 		data: messageData,
@@ -52,7 +60,7 @@ const ChatBox = () => {
 		socket.on('chatMessageReceived', ({ sender, message, date, _id }) => {
 			setMessages((preMessage) => [
 				...preMessage,
-				{ sender, message, date, _id },
+				{ sender, message, date, _id, readBy: [] },
 			]);
 		});
 
@@ -135,14 +143,36 @@ const ChatBox = () => {
 							'Failed to load messages.'}
 					</p>
 				) : (
-					messages.map((message) => (
-						<ChatMessage
-							key={message._id}
-							{...{
-								message,
-							}}
-						/>
-					))
+					messages.map((message) => {
+						if (
+							!message.readBy
+								.map((user: any) => user._id)
+								.includes(userId)
+						) {
+							console.log(
+								message.readBy
+									.map((user: any) => user._id)
+									.includes(userId),
+
+								message.readBy.map((user: any) => user._id),
+								userId
+							);
+
+							socket!.emit('markMessageAsRead', {
+								messageId: message._id,
+								chatId: params.chatId,
+							});
+						}
+
+						return (
+							<ChatMessage
+								key={message._id}
+								{...{
+									message,
+								}}
+							/>
+						);
+					})
 				)}
 
 				<div ref={messagesEndRef} />
