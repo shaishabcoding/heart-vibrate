@@ -1,10 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Sidebar as SBar, SidebarBody } from '@/components/ui/sidebar';
-import { IconTrash } from '@tabler/icons-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
-import { SearchIcon } from 'lucide-react';
 import ChatSearchBar from './ChatSearchBar';
 import {
 	useChatDeleteMutation,
@@ -13,32 +9,75 @@ import {
 import { toast } from 'sonner';
 import { useSocket } from '@/provider/SocketProvider';
 import Img from '@/components/ui/Img';
+import { sortTimeAgo } from '@/lib/time';
+import { IconLogout } from '@tabler/icons-react';
 
 export default function ChatSidebar() {
 	const params = useParams();
 	const { data, isLoading, isError, refetch } = useChatListQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
+	const leaveBtnRef = useRef<HTMLButtonElement>(null);
 	const { socket } = useSocket();
 
 	const chats = data?.data ?? [];
 
-	const [open, setOpen] = useState(true);
-	const handleDelete = async (
-		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-		chatId: string
-	) => {
-		e.preventDefault();
+	const [contextMenu, setContextMenu] = useState<{
+		x: number;
+		y: number;
+		chatId: string;
+	} | null>(null);
 
+	const handleRightClick = (event: React.MouseEvent, chatId: string) => {
+		event.preventDefault();
+		setContextMenu({
+			x: event.clientX,
+			y: event.clientY,
+			chatId,
+		});
+	};
+
+	const handleClickOutside = () => {
+		setContextMenu(null);
+	};
+
+	const handleDelete = async (chatId: string) => {
 		const toastId = toast.loading('Deleting chat...');
-
 		try {
 			const { data } = await deleteChat(chatId);
-
 			toast.success(data.message, { id: toastId });
 		} finally {
 			toast.dismiss(toastId);
+			setContextMenu(null);
 		}
 	};
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	}, []);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Delete' || event.key === 'Backspace') {
+				if (contextMenu?.chatId) {
+					leaveBtnRef.current?.classList.add('animate-click');
+					leaveBtnRef.current?.focus();
+					leaveBtnRef.current?.click();
+
+					setTimeout(() => {
+						leaveBtnRef.current?.classList.remove('animate-click');
+					}, 200);
+				}
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [contextMenu]);
 
 	useEffect(() => {
 		if (!socket) return;
@@ -56,133 +95,122 @@ export default function ChatSidebar() {
 	}, [socket, refetch]);
 
 	return (
-		<div
-			className={cn(
-				'rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden',
-				'h-screen'
-			)}
-		>
-			<SBar
-				open={open}
-				setOpen={setOpen}
-			>
-				<SidebarBody className="min-w-[77px] max-w-sm border-gray-200">
-					<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-						{open ? <ChatSearchBar /> : <SearchIcon />}
-						<div className="mt-8 flex flex-col gap-2">
-							{isLoading ? (
-								<p className="text-center text-gray-500">
-									Loading chats...
-								</p>
-							) : isError ? (
-								<p className="text-center text-red-500">
-									Failed to load chats
-								</p>
-							) : chats.length === 0 ? (
-								<p className="text-center text-gray-500">
-									No chats found.
-									<img src="/empty.png" />
-								</p>
-							) : (
-								chats.map(
-									({
-										_id = '',
-										name = '',
-										image = '',
-										lastMessage = 'No message',
-									}) => {
-										const isRead = true;
-										const isActive = false;
+		<div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
+			<div className="w-[300px] border-gray-200 h-full">
+				<div className="flex flex-col flex-1 relative overflow-y-auto h-full overflow-x-hidden">
+					<ChatSearchBar />
+					<div className="p-2 flex flex-col gap-2">
+						{isLoading ? (
+							<p className="text-center text-gray-500">
+								Loading chats...
+							</p>
+						) : isError ? (
+							<p className="text-center text-red-500">
+								Failed to load chats
+							</p>
+						) : chats.length === 0 ? (
+							<p className="text-center text-gray-500">
+								No chats found.
+								<img src="/empty.png" />
+							</p>
+						) : (
+							chats.map(
+								({
+									_id = '',
+									name = '',
+									image = '',
+									lastMessage = 'No message',
+									lastMessageTime = '',
+									updatedAt = '',
+								}) => {
+									const isRead = true;
+									const isActive = false;
 
-										return open ? (
-											<MovingBorder key={_id}>
-												<Link
-													to={_id}
-													className={`flex border relative overflow-x-hidden items-center gap-2 ${
-														open
-															? 'p-2 rounded-md'
-															: 'rounded-full p-1'
-													} ${
-														isRead
-															? 'bg-gray-100'
-															: 'bg-white'
-													} dark:bg-neutral-900 transition ${
-														params.chatId === _id
-															? 'border-l-[6px] border-black cursor-not-allowed'
-															: 'cursor-pointer active:animate-click'
-													}`}
-												>
-													<div className="relative">
-														<Img
-															src={image}
-															alt={`Image of chat: ${name}`}
-															className="h-10 w-10 bg-white border rounded-md"
-														/>
-														{isActive && (
-															<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-														)}
-													</div>
-
-													{open && (
-														<div className="flex flex-col">
-															<p
-																translate="no"
-																className="text-sm font-semibold"
-															>
-																{name}
-															</p>
-															<p
-																translate="no"
-																className="text-xs text-gray-400"
-															>
-																{lastMessage}
-															</p>
-														</div>
-													)}
-
-													<div className="self-center grow flex justify-end">
-														<button
-															onClick={(e) =>
-																handleDelete(
-																	e,
-																	_id
-																)
-															}
-															className="active:animate-click aspect-square p-2 box-border hover:border-red-600 flex items-center justify-center text-red-400 bg-red-50"
-														>
-															<IconTrash />
-														</button>
-													</div>
-												</Link>
-											</MovingBorder>
-										) : (
-											<div
-												className="relative drop-shadow-md"
-												key={_id}
+									return (
+										<MovingBorder key={_id}>
+											<Link
+												to={_id}
+												onContextMenu={(e) =>
+													handleRightClick(e, _id)
+												}
+												className={`flex border relative overflow-x-hidden items-center gap-2 p-2 rounded-md ${
+													contextMenu?.chatId === _id
+														? 'bg-blue-100'
+														: isRead
+														? 'bg-gray-100'
+														: 'bg-white'
+												} dark:bg-neutral-900 transition ${
+													params.chatId === _id
+														? 'border-l-[6px] border-black cursor-not-allowed'
+														: 'cursor-pointer active:animate-click'
+												}`}
 											>
-												<Img
-													src={image}
-													alt={`Image of chat: ${name}`}
-													className={`h-10 w-10 object-cover bg-white border rounded-md ${
-														!isRead &&
-														'border-4 border-blue-300'
-													} ${
-														params.chatId === _id &&
-														'border-l-[6px] border-black p-1'
-													}`}
-												/>
-												{isActive && (
-													<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-												)}
-											</div>
-										);
-									}
-								)
-							)}
-						</div>
+												<div className="relative">
+													<Img
+														src={image}
+														alt={`Image of chat: ${name}`}
+														className="h-10 w-10 bg-white border rounded-md"
+													/>
+													{isActive && (
+														<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
+													)}
+												</div>
+												<div className="flex flex-col">
+													<p
+														translate="no"
+														className="text-sm font-semibold"
+													>
+														{name}
+													</p>
+													<p
+														translate="no"
+														className="text-sm text-gray-600"
+													>
+														{lastMessage ||
+															'No message yet.'}{' '}
+													</p>
+													<p
+														translate="no"
+														className="text-xs text-gray-400"
+													>
+														{sortTimeAgo(
+															lastMessageTime ||
+																updatedAt
+														)}
+													</p>
+												</div>
+											</Link>
+										</MovingBorder>
+									);
+								}
+							)
+						)}
 					</div>
-				</SidebarBody>
-			</SBar>
+				</div>
+			</div>
+
+			{/* Context Menu */}
+			{contextMenu && (
+				<div
+					className="absolute bg-white shadow-md rounded-md py-2 w-40 border z-50"
+					style={{ top: contextMenu.y, left: contextMenu.x }}
+					onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+				>
+					<ul className="text-sm text-gray-800">
+						<li>
+							<button
+								ref={leaveBtnRef}
+								className="px-4 rounded-none border-none flex w-full items-center gap-2 group py-2 hover:bg-red-200 text-red-600 cursor-pointer active:animate-click select-none"
+								onClick={() => handleDelete(contextMenu.chatId)}
+							>
+								<IconLogout className="group-hover:translate-x-1 transition" />{' '}
+								Leave Chat
+							</button>
+						</li>
+					</ul>
+				</div>
+			)}
+
 			<div className="w-full">
 				<Outlet />
 			</div>

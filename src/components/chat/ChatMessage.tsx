@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { timeAgo } from '@/lib/timeAgo';
+import { sortTimeAgo } from '@/lib/time';
 import { useAppSelector } from '@/redux/hooks';
 import {
 	IconDotsVertical,
@@ -10,7 +10,7 @@ import {
 	IconTrash,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
-import Img from '../ui/img';
+import Img from '@/components/ui/Img';
 
 interface ChatMessageProps {
 	message: any;
@@ -100,7 +100,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 							translate="yes"
 							className="hidden group-hover:inline-block"
 						>
-							{timeAgo(message.date)}
+							{sortTimeAgo(message.date)}
 						</span>
 					)}
 				</div>

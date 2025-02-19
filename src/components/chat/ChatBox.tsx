@@ -94,7 +94,14 @@ const ChatBox = () => {
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
+			sendBtnRef.current?.classList.add('animate-click');
+			sendBtnRef.current?.focus();
 			sendBtnRef.current?.click();
+
+			setTimeout(() => {
+				(e.target as HTMLInputElement).focus();
+				sendBtnRef.current?.classList.remove('animate-click');
+			}, 500);
 		}
 	};
 
