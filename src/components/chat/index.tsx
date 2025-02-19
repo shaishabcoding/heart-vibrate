@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router-dom';
 import { MovingBorder } from '../ui/MovingBorder';
@@ -11,14 +12,16 @@ import { useSocket } from '@/provider/SocketProvider';
 import Img from '@/components/ui/Img';
 import { sortTimeAgo } from '@/lib/time';
 import { IconLogout } from '@tabler/icons-react';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function ChatSidebar() {
+	const userId = useAppSelector((state) => state.auth.user?._id);
 	const params = useParams();
 	const { data, isLoading, isError, refetch } = useChatListQuery(null);
 	const [deleteChat] = useChatDeleteMutation();
 	const leaveBtnRef = useRef<HTMLButtonElement>(null);
 	const { socket } = useSocket();
-	const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+	const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
 	const chats = data?.data ?? [];
 
@@ -90,7 +93,7 @@ export default function ChatSidebar() {
 		}, 1000);
 
 		socket.on('inboxUpdated', refetch);
-		socket.on('onlineUsers', (data) => setOnlineUsers(new Set(data)));
+		socket.on('onlineUsers', (data) => setOnlineUsers(data));
 
 		return () => {
 			socket.off('inboxUpdated');
@@ -128,8 +131,21 @@ export default function ChatSidebar() {
 									updatedAt = '',
 									sender = '',
 									unRead = false,
+									isGroup = false,
+									users = [],
 								}) => {
-									const isActive = onlineUsers.has(sender);
+									const isActive = isGroup
+										? users
+												.filter(
+													(user: any) =>
+														user._id !== userId
+												)
+												.some((user: any) =>
+													onlineUsers.includes(
+														user.email
+													)
+												)
+										: onlineUsers.includes(sender);
 
 									return (
 										<MovingBorder key={_id}>
