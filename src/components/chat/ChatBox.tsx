@@ -62,12 +62,16 @@ const ChatBox = () => {
 			socket.emit('subscribeToChat', params.chatId);
 		}, 1000);
 
-		socket.on('chatMessageReceived', ({ sender, message, date, _id }) => {
-			setMessages((preMessage) => [
-				...preMessage,
-				{ sender, message, date, _id, readBy: [] },
-			]);
-		});
+		socket.on(
+			'chatMessageReceived',
+			({ sender, message, date, _id, chatId }) => {
+				if (chatId === params.chatId)
+					setMessages((preMessage) => [
+						...preMessage,
+						{ sender, message, date, _id, readBy: [] },
+					]);
+			}
+		);
 
 		socket.on('chatUpdated', refetch);
 
