@@ -43,6 +43,11 @@ const ChatBox = () => {
 	const { data: chatData } = useChatRetrieveQuery(params.chatId as string);
 
 	useEffect(() => {
+		refetch();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	useEffect(() => {
 		if (messageData?.data) {
 			setMessages(messageData.data);
 		}
