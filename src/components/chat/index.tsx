@@ -18,6 +18,7 @@ export default function ChatSidebar() {
 	const [deleteChat] = useChatDeleteMutation();
 	const leaveBtnRef = useRef<HTMLButtonElement>(null);
 	const { socket } = useSocket();
+	const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
 	const chats = data?.data ?? [];
 
@@ -81,6 +82,7 @@ export default function ChatSidebar() {
 
 	useEffect(() => {
 		if (!socket) return;
+		socket.connect();
 
 		setTimeout(() => {
 			console.log('🔄 Subscribing to chat...');
@@ -88,9 +90,11 @@ export default function ChatSidebar() {
 		}, 1000);
 
 		socket.on('inboxUpdated', refetch);
+		socket.on('onlineUsers', (data) => setOnlineUsers(new Set(data)));
 
 		return () => {
 			socket.off('inboxUpdated');
+			socket.disconnect();
 		};
 	}, [socket, refetch]);
 
@@ -122,9 +126,10 @@ export default function ChatSidebar() {
 									lastMessage = 'No message',
 									lastMessageTime = '',
 									updatedAt = '',
+									sender = '',
 								}) => {
 									const isRead = true;
-									const isActive = false;
+									const isActive = onlineUsers.has(sender);
 
 									return (
 										<MovingBorder key={_id}>
@@ -151,9 +156,13 @@ export default function ChatSidebar() {
 														alt={`Image of chat: ${name}`}
 														className="h-10 w-10 bg-white border rounded-md"
 													/>
-													{isActive && (
-														<div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-													)}
+													<div
+														className={`w-3 h-3 ${
+															isActive
+																? 'bg-green-500'
+																: 'bg-gray-500'
+														} rounded-full absolute bottom-0 right-0`}
+													></div>
 												</div>
 												<div className="flex flex-col">
 													<p
