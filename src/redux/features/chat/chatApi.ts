@@ -36,6 +36,21 @@ const chatApi = baseApi.injectEndpoints({
 			}),
 			invalidatesTags: [{ type: 'Chat', id: 'LIST' }],
 		}),
+
+		chatUpdate: builder.mutation({
+			query: ({
+				chatId,
+				formData,
+			}: {
+				chatId: string;
+				formData: FormData;
+			}) => ({
+				url: `/chat/${chatId}/edit`,
+				method: 'PATCH',
+				body: formData,
+			}),
+			invalidatesTags: [{ type: 'Chat', id: 'LIST' }],
+		}),
 	}),
 });
 
@@ -44,4 +59,5 @@ export const {
 	useChatResolveMutation,
 	useChatDeleteMutation,
 	useChatRetrieveQuery,
+	useChatUpdateMutation,
 } = chatApi;
