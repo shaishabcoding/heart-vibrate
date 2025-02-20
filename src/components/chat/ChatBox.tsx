@@ -10,10 +10,12 @@ import { useChatRetrieveQuery } from '@/redux/features/chat/chatApi';
 import Img from '@/components/ui/Img';
 import { useAppSelector } from '@/redux/hooks';
 import GroupSetting from './GroupSetting';
+import VoiceRecorder from './VoiceRecorder';
 
 type TMessage = {
 	sender: string;
-	message: string;
+	content: string;
+	type: string;
 	date: string;
 	_id: string;
 	readBy: string[];
@@ -50,6 +52,26 @@ const ChatBox = () => {
 		}
 	}, [messageData]);
 
+	const sendAudio = (audioBlob: Blob) => {
+		const reader = new FileReader();
+		reader.readAsDataURL(audioBlob);
+		reader.onloadend = () => {
+			const base64Audio = reader.result;
+			// socket!.emit('sendMessage', {
+			// 	type: 'audio',
+			// 	content: base64Audio,
+			// });
+			// setMessages([...messages, { type: 'audio', content: base64Audio }]);
+			socket!.emit('sendMessage', {
+				content: base64Audio,
+				type: 'audio',
+				roomId: params.chatId,
+			});
+
+			console.log(base64Audio);
+		};
+	};
+
 	useEffect(() => {
 		// Ensure socket is not null before calling emit or on
 		if (!socket) return;
@@ -61,11 +83,11 @@ const ChatBox = () => {
 
 		socket.on(
 			'chatMessageReceived',
-			({ sender, message, date, _id, chatId }) => {
+			({ sender, content, type, date, _id, chatId }) => {
 				if (chatId === params.chatId)
 					setMessages((preMessage) => [
 						...preMessage,
-						{ sender, message, date, _id, readBy: [] },
+						{ sender, content, type, date, _id, readBy: [] },
 					]);
 			}
 		);
@@ -97,7 +119,8 @@ const ChatBox = () => {
 	const handleSendMessage = async () => {
 		if (newMessage.trim()) {
 			socket!.emit('sendMessage', {
-				message: newMessage,
+				content: newMessage,
+				type: 'text',
 				roomId: params.chatId,
 			});
 
@@ -176,6 +199,7 @@ const ChatBox = () => {
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">
 				<div className="flex items-center space-x-2">
+					<VoiceRecorder onSend={sendAudio} />
 					<MovingBorder className="w-full">
 						<input
 							autoFocus

@@ -10,12 +10,15 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import Img from '@/components/ui/Img';
+import url from '@/lib/url';
 
 interface ChatMessageProps {
 	message: any;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+	console.log(message);
+
 	const user = useAppSelector((state) => state.auth.user);
 	const isCurrentUser = message.sender?._id === user?._id;
 	const [showMenu, setShowMenu] = useState(false);
@@ -23,15 +26,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 	const menuRef = useRef<HTMLDivElement>(null);
 
 	const [translate, setTranslate] = useState(false);
-	const [displayText, setDisplayText] = useState(message.message);
+	const [content, setDisplayContent] = useState(message.content);
 
 	useEffect(() => {
 		if (!translate) {
-			setDisplayText(message.message + '\u200B');
+			setDisplayContent(message.content + '\u200B');
 		} else {
-			setDisplayText(message.message);
+			setDisplayContent(message.content);
 		}
-	}, [translate, message.message]);
+	}, [translate, message.content]);
 
 	// Handle click outside to close the menu
 	useEffect(() => {
@@ -107,17 +110,25 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 							</span>
 						</div>
 					)}
-					<span
-						translate={translate ? 'yes' : 'no'}
-						className={`${
-							isCurrentUser
-								? 'bg-gray-200 text-gray-800'
-								: 'bg-blue-500 text-white'
-						} p-2 rounded-lg mt-2`}
-					>
-						{displayText}
-					</span>
-
+					{message.type === 'text' && (
+						<span
+							translate={translate ? 'yes' : 'no'}
+							className={`${
+								isCurrentUser
+									? 'bg-gray-200 text-gray-800'
+									: 'bg-blue-500 text-white'
+							} p-2 rounded-lg mt-2`}
+						>
+							{content}
+						</span>
+					)}
+					{message.type === 'audio' && (
+						<audio
+							className="mt-2"
+							src={url(message.content)}
+							controls
+						/>
+					)}
 					{message.date && (
 						<span
 							translate="yes"
