@@ -133,6 +133,7 @@ export default function ChatSidebar() {
 									unRead = false,
 									isGroup = false,
 									users = [],
+									unreadCount = 0,
 								}) => {
 									const isActive = isGroup
 										? users
@@ -204,6 +205,13 @@ export default function ChatSidebar() {
 														)}
 													</p>
 												</div>
+												{unRead && (
+													<div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center justify-center h-fit px-1 bg-red-500 rounded-full">
+														<p className="text-sm text-white">
+															{unreadCount}
+														</p>
+													</div>
+												)}
 											</Link>
 										</MovingBorder>
 									);

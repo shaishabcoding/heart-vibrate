@@ -156,8 +156,7 @@ const ChatBox = () => {
 								.map((user: any) => user._id)
 								.includes(userId)
 						) {
-							socket!.emit('markMessageAsRead', {
-								messageId: message._id,
+							socket!.emit('markAllMessagesAsRead', {
 								chatId: params.chatId,
 							});
 						}
