@@ -129,6 +129,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 							controls
 						/>
 					)}
+					{message.type === 'image' && (
+						<img
+							className="mt-2"
+							src={url(message.content)}
+						/>
+					)}
+					{message.type === 'video' && (
+						<video
+							className="mt-2"
+							src={url(message.content)}
+							controls
+						/>
+					)}
 					{message.date && (
 						<span
 							translate="yes"

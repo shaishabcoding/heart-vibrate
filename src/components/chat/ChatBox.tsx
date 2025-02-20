@@ -11,6 +11,7 @@ import Img from '@/components/ui/Img';
 import { useAppSelector } from '@/redux/hooks';
 import GroupSetting from './GroupSetting';
 import VoiceRecorder from './VoiceRecorder';
+import MediaCaptureComponent from './MediaCaptureComponent';
 
 type TMessage = {
 	sender: string;
@@ -52,24 +53,40 @@ const ChatBox = () => {
 		}
 	}, [messageData]);
 
-	const sendAudio = (audioBlob: Blob) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(audioBlob);
-		reader.onloadend = () => {
-			const base64Audio = reader.result;
-			// socket!.emit('sendMessage', {
-			// 	type: 'audio',
-			// 	content: base64Audio,
-			// });
-			// setMessages([...messages, { type: 'audio', content: base64Audio }]);
-			socket!.emit('sendMessage', {
-				content: base64Audio,
-				type: 'audio',
-				roomId: params.chatId,
-			});
+	const sendFiles = (blob: Blob, type: string) => {
+		const CHUNK_SIZE = 256 * 1024; // 256KB per chunk for better efficiency
+		let offset = 0;
+		let chunkIndex = 0;
+		const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
 
-			console.log(base64Audio);
+		const readNextChunk = () => {
+			const slice = blob.slice(offset, offset + CHUNK_SIZE);
+			const reader = new FileReader();
+
+			reader.onload = () => {
+				if (reader.result) {
+					socket!.emit('sendMessage', {
+						content: reader.result,
+						type,
+						roomId: params.chatId,
+						chunkIndex,
+						totalChunks,
+						isLastChunk: chunkIndex + 1 === totalChunks, // Mark last chunk
+					});
+
+					offset += CHUNK_SIZE;
+					chunkIndex++;
+
+					if (offset < blob.size) {
+						readNextChunk();
+					}
+				}
+			};
+
+			reader.readAsArrayBuffer(slice);
 		};
+
+		readNextChunk();
 	};
 
 	useEffect(() => {
@@ -199,7 +216,16 @@ const ChatBox = () => {
 			</div>
 			<div className="p-4 border-t border-gray-200 dark:border-gray-700">
 				<div className="flex items-center space-x-2">
-					<VoiceRecorder onSend={sendAudio} />
+					<VoiceRecorder
+						onSend={(blob) => {
+							sendFiles(blob, 'audio');
+						}}
+					/>
+					<MediaCaptureComponent
+						onSend={(blob, type) => {
+							sendFiles(blob, type);
+						}}
+					/>
 					<MovingBorder className="w-full">
 						<input
 							autoFocus
