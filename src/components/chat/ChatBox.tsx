@@ -12,6 +12,7 @@ import { useAppSelector } from '@/redux/hooks';
 import GroupSetting from './GroupSetting';
 import VoiceRecorder from './VoiceRecorder';
 import MediaCaptureComponent from './MediaCaptureComponent';
+import { toast } from 'sonner';
 
 type TMessage = {
 	sender: string;
@@ -54,39 +55,77 @@ const ChatBox = () => {
 	}, [messageData]);
 
 	const sendFiles = (blob: Blob, type: string) => {
-		const CHUNK_SIZE = 256 * 1024; // 256KB per chunk for better efficiency
-		let offset = 0;
-		let chunkIndex = 0;
-		const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
+		return new Promise<void>((resolve, reject) => {
+			const CHUNK_SIZE = 256 * 1024; // 256KB per chunk
+			let offset = 0;
+			let chunkIndex = 0;
+			const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
+			let progress = 0;
 
-		const readNextChunk = () => {
-			const slice = blob.slice(offset, offset + CHUNK_SIZE);
-			const reader = new FileReader();
+			// Create loading toast
+			const toastId = toast.loading(`${type} sending... 0%`);
 
-			reader.onload = () => {
-				if (reader.result) {
-					socket!.emit('sendMessage', {
-						content: reader.result,
-						type,
-						roomId: params.chatId,
-						chunkIndex,
-						totalChunks,
-						isLastChunk: chunkIndex + 1 === totalChunks, // Mark last chunk
-					});
-
-					offset += CHUNK_SIZE;
-					chunkIndex++;
-
-					if (offset < blob.size) {
-						readNextChunk();
-					}
-				}
+			const updateProgress = () => {
+				progress = Math.round((chunkIndex / totalChunks) * 100);
+				toast.loading(`${type} sending... ${progress}%`, {
+					id: toastId,
+				});
 			};
 
-			reader.readAsArrayBuffer(slice);
-		};
+			const readNextChunk = () => {
+				const slice = blob.slice(offset, offset + CHUNK_SIZE);
+				const reader = new FileReader();
 
-		readNextChunk();
+				reader.onload = () => {
+					if (reader.result) {
+						socket!.emit('sendMessage', {
+							content: reader.result,
+							type,
+							roomId: params.chatId,
+							chunkIndex,
+							totalChunks,
+							isLastChunk: chunkIndex + 1 === totalChunks,
+						});
+
+						offset += CHUNK_SIZE;
+						chunkIndex++;
+
+						// Update progress
+						updateProgress();
+
+						if (offset < blob.size) {
+							readNextChunk();
+						} else {
+							// All chunks sent
+							setTimeout(() => {
+								toast.dismiss(toastId);
+								resolve();
+							}, 1000); // Give a small delay to show 100%
+						}
+					}
+				};
+
+				reader.onerror = (error) => {
+					toast.dismiss(toastId);
+					toast.error('Error reading file');
+					reject(error);
+				};
+
+				reader.readAsArrayBuffer(slice);
+			};
+
+			// Handle socket errors
+			const errorHandler = (error: any) => {
+				toast.dismiss(toastId);
+				toast.error('Error sending file');
+				reject(error);
+			};
+
+			socket?.once('error', errorHandler);
+
+			// Start sending chunks
+			readNextChunk();
+		});
 	};
 
 	useEffect(() => {
