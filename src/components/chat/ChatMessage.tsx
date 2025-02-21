@@ -2,6 +2,7 @@
 import { timeAgo } from '@/lib/time';
 import { useAppSelector } from '@/redux/hooks';
 import {
+	IconDownload,
 	IconEdit,
 	IconHeart,
 	IconLanguage,
@@ -11,14 +12,13 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import Img from '@/components/ui/Img';
 import url from '@/lib/url';
+import { toast } from 'sonner';
 
 interface ChatMessageProps {
 	message: any;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-	console.log(message);
-
 	const user = useAppSelector((state) => state.auth.user);
 	const isCurrentUser = message.sender?._id === user?._id;
 	const [showMenu, setShowMenu] = useState(false);
@@ -79,6 +79,50 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 		}
 
 		setMenuPosition({ x: posX, y: posY });
+	};
+
+	const handleDownload = async () => {
+		const type = message.type;
+		const toastId = toast.loading(`${type} downloading... 0%`);
+
+		try {
+			const response = await fetch(url(message.content));
+			const reader = response.body?.getReader();
+			const contentLength = response.headers.get('Content-Length');
+
+			if (!reader || !contentLength) {
+				throw new Error('Unable to download file.');
+			}
+
+			const totalLength = parseInt(contentLength, 10);
+			let receivedLength = 0;
+			const chunks: Uint8Array[] = [];
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				chunks.push(value);
+				receivedLength += value.length;
+				const progress = Math.floor(
+					(receivedLength / totalLength) * 100
+				);
+				toast.message(`${type} downloading... ${progress}%`, {
+					id: toastId,
+				});
+			}
+
+			const blob = new Blob(chunks);
+			const link = document.createElement('a');
+			link.href = URL.createObjectURL(blob);
+			link.download = message.content.split('/').pop();
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			toast.success(`${type} downloaded successfully!`, { id: toastId });
+		} catch {
+			toast.error(`Error downloading ${type}`, { id: toastId });
+		}
 	};
 
 	return (
@@ -164,30 +208,47 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 							position: 'fixed', // Fix position to prevent scroll issues
 						}}
 					>
-						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-							<IconEdit /> Edit
-						</button>
-						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-							<IconTrash /> Delete
-						</button>
-						<button className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
-							<IconHeart /> Like
-						</button>
-						<button
-							onClick={() => setTranslate(!translate)}
-							className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
-						>
-							{!translate ? (
-								<>
-									<IconLanguage /> <span>Translate</span>
-								</>
-							) : (
-								<>
-									<IconLanguageOff />{' '}
-									<span>Original Text</span>
-								</>
-							)}
-						</button>
+						{!isCurrentUser ? (
+							<button className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+								<IconHeart /> Like
+							</button>
+						) : (
+							<button className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+								<IconTrash /> Delete
+							</button>
+						)}
+						{message.type !== 'text' ? (
+							<button
+								onClick={handleDownload}
+								className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+							>
+								<IconDownload /> Download
+							</button>
+						) : (
+							<>
+								{isCurrentUser && (
+									<button className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+										<IconEdit /> Edit
+									</button>
+								)}
+								<button
+									onClick={() => setTranslate(!translate)}
+									className="flex items-center pl-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
+								>
+									{!translate ? (
+										<>
+											<IconLanguage />{' '}
+											<span>Translate</span>
+										</>
+									) : (
+										<>
+											<IconLanguageOff />{' '}
+											<span>Original Text</span>
+										</>
+									)}
+								</button>
+							</>
+						)}
 					</div>
 				)}
 			</div>
