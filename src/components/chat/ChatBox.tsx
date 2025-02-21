@@ -285,7 +285,7 @@ const ChatBox = () => {
 					</MovingBorder>
 					<MovingBorder>
 						<button
-							className="flex items-center gap-1 group bg-sky-400 border-sky-500 text-white"
+							className="flex items-center gap-1 group bg-blue-500 border-blue-500 text-white"
 							ref={sendBtnRef}
 							onClick={handleSendMessage}
 						>
