@@ -1,168 +1,252 @@
-import { useState } from "react";
-import { Sidebar as SBar, SidebarBody } from "@/components/ui/sidebar";
-import { IconSearch, IconTrash } from "@tabler/icons-react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { Link, Outlet } from "react-router-dom";
-import { Input } from "../ui/input";
-import { MovingBorder } from "../ui/MovingBorder";
-
-const data = [
-  {
-    _id: "lkdsjaflkjsdlkj",
-    logo: "https://picsum.photos/200",
-    name: "John Doe",
-    lastMessage: "Hey, how are you?",
-    isActive: true,
-    isRead: false,
-  },
-  {
-    _id: "lkdsjaflkjsdlkj",
-    logo: "https://picsum.photos/200",
-    name: "Jane Smith",
-    lastMessage: "Are you coming to the meeting?",
-    isActive: false,
-    isRead: true,
-  },
-  {
-    _id: "lkdsjaflkjsdlkj",
-    logo: "https://picsum.photos/200",
-    name: "Alice Johnson",
-    lastMessage: "Let's catch up later.",
-    isActive: true,
-    isRead: false,
-  },
-  {
-    _id: "lkdsjaflkjsdlkj",
-    logo: "https://picsum.photos/200",
-    name: "Bob Brown",
-    lastMessage: "Can you send me the report?",
-    isActive: false,
-    isRead: true,
-  },
-  {
-    _id: "lkdsjaflkjsdlkj",
-    logo: "https://picsum.photos/200",
-    name: "Charlie Davis",
-    lastMessage: "Good morning!",
-    isActive: true,
-    isRead: false,
-  },
-];
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react';
+import { Link, Outlet, useParams } from 'react-router-dom';
+import { MovingBorder } from '../ui/MovingBorder';
+import ChatSearchBar from './ChatSearchBar';
+import {
+	useChatDeleteMutation,
+	useChatListQuery,
+} from '@/redux/features/chat/chatApi';
+import { toast } from 'sonner';
+import { useSocket } from '@/provider/SocketProvider';
+import Img from '@/components/ui/Img';
+import { sortTimeAgo } from '@/lib/time';
+import { IconLogout } from '@tabler/icons-react';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function ChatSidebar() {
-  const [open, setOpen] = useState(false);
-  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
+	const userId = useAppSelector((state) => state.auth.user?._id);
+	const params = useParams();
+	const { data, isLoading, isError, refetch } = useChatListQuery(null);
+	const [deleteChat] = useChatDeleteMutation();
+	const leaveBtnRef = useRef<HTMLButtonElement>(null);
+	const { socket } = useSocket();
+	const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
-    console.log("Delete");
-  };
-  return (
-    <div
-      className={cn(
-        "rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden",
-        "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
-      )}
-    >
-      <SBar open={open} setOpen={setOpen}>
-        <SidebarBody className="min-w-fit border-gray-200">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
-              {data?.map(({ logo, lastMessage, name, isActive, isRead, _id }) =>
-                open ? (
-                  <MovingBorder>
-                    <Link
-                      onClick={() => console.log("Clicked")}
-                      to={_id}
-                      className={`flex border active:animate-click items-center gap-2 ${
-                        open ? "p-2 rounded-md" : "rounded-full p-1"
-                      } ${
-                        isRead ? "bg-gray-100" : "bg-white"
-                      } dark:bg-neutral-900 transition cursor-pointer`}
-                    >
-                      <div className="relative">
-                        <img
-                          src={logo}
-                          alt="logo"
-                          className="h-10 w-10 rounded-full"
-                        />
-                        {isActive && (
-                          <div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-                        )}
-                      </div>
+	const chats = data?.data ?? [];
 
-                      {open && (
-                        <div className="flex flex-col">
-                          <p className="text-sm font-semibold">{name}</p>
-                          <p className="text-xs text-gray-400">{lastMessage}</p>
-                        </div>
-                      )}
+	const [contextMenu, setContextMenu] = useState<{
+		x: number;
+		y: number;
+		chatId: string;
+	} | null>(null);
 
-                      <div className="self-center grow flex justify-end">
-                        <button
-                          onClick={handleDelete}
-                          className="active:animate-click aspect-square p-2 box-border hover:border-red-600 flex items-center justify-center text-red-400 bg-red-50"
-                        >
-                          <IconTrash />
-                        </button>
-                      </div>
-                    </Link>
-                  </MovingBorder>
-                ) : (
-                  <div className="relative">
-                    <img
-                      src={logo}
-                      alt="logo"
-                      className={`h-10 w-10 rounded-full ${
-                        !isRead && "border-4 border-blue-300"
-                      }`}
-                    />
-                    {isActive && (
-                      <div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0"></div>
-                    )}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </SidebarBody>
-      </SBar>
-      <div className="w-full">
-        <Outlet />
-      </div>
-    </div>
-  );
+	const handleRightClick = (event: React.MouseEvent, chatId: string) => {
+		event.preventDefault();
+		setContextMenu({
+			x: event.clientX,
+			y: event.clientY,
+			chatId,
+		});
+	};
+
+	const handleClickOutside = () => {
+		setContextMenu(null);
+	};
+
+	const handleDelete = async (chatId: string) => {
+		const toastId = toast.loading('Deleting chat...');
+		try {
+			const { data } = await deleteChat(chatId);
+			toast.success(data.message, { id: toastId });
+		} finally {
+			toast.dismiss(toastId);
+			setContextMenu(null);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	}, []);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Delete' || event.key === 'Backspace') {
+				if (contextMenu?.chatId) {
+					leaveBtnRef.current?.classList.add('animate-click');
+					leaveBtnRef.current?.focus();
+					leaveBtnRef.current?.click();
+
+					setTimeout(() => {
+						leaveBtnRef.current?.classList.remove('animate-click');
+					}, 200);
+				}
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [contextMenu]);
+
+	useEffect(() => {
+		if (!socket) return;
+		socket.connect();
+
+		setTimeout(() => {
+			console.log('🔄 Subscribing to inbox...');
+			socket.emit('subscribeToInbox');
+		}, 1000);
+
+		socket.on('inboxUpdated', refetch);
+		socket.on('onlineUsers', (data) => setOnlineUsers(data));
+
+		return () => {
+			socket.off('inboxUpdated');
+			socket.disconnect();
+		};
+	}, [socket, refetch]);
+
+	return (
+		<div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
+			<div className="w-[300px] border-gray-200 h-full">
+				<div className="flex flex-col flex-1 relative overflow-y-auto h-full overflow-x-hidden">
+					<ChatSearchBar />
+					<div className="p-2 flex flex-col gap-2">
+						{isLoading ? (
+							<p className="text-center text-gray-500">
+								Loading chats...
+							</p>
+						) : isError ? (
+							<p className="text-center text-red-500">
+								Failed to load chats
+							</p>
+						) : chats.length === 0 ? (
+							<p className="text-center text-gray-500">
+								No chats found.
+								<img src="/empty.png" />
+							</p>
+						) : (
+							chats.map(
+								({
+									_id = '',
+									name = '',
+									image = '',
+									lastMessage = 'No message',
+									lastMessageTime = '',
+									updatedAt = '',
+									sender = '',
+									unRead = false,
+									isGroup = false,
+									users = [],
+									unreadCount = 0,
+								}) => {
+									const isActive = isGroup
+										? users
+												.filter(
+													(user: any) =>
+														user._id !== userId
+												)
+												.some((user: any) =>
+													onlineUsers.includes(
+														user.email
+													)
+												)
+										: onlineUsers.includes(sender);
+
+									return (
+										<MovingBorder key={_id}>
+											<Link
+												to={_id}
+												onContextMenu={(e) =>
+													handleRightClick(e, _id)
+												}
+												className={`flex border relative overflow-x-hidden items-center gap-2 p-2 rounded-md ${
+													contextMenu?.chatId === _id
+														? 'bg-blue-100'
+														: !unRead
+														? 'bg-gray-100'
+														: 'bg-white'
+												} dark:bg-neutral-900 transition ${
+													params.chatId === _id
+														? 'border-l-[6px] border-black cursor-not-allowed'
+														: 'cursor-pointer active:animate-click'
+												}`}
+											>
+												<div className="relative">
+													<Img
+														src={image}
+														alt={`Image of chat: ${name}`}
+														className="h-10 w-10 bg-white border rounded-md"
+													/>
+													<div
+														className={`w-3 h-3 ${
+															isActive
+																? 'bg-green-500'
+																: 'bg-gray-500'
+														} rounded-full absolute bottom-0 right-0`}
+													></div>
+												</div>
+												<div className="flex flex-col">
+													<p
+														translate="no"
+														className="text-sm font-semibold"
+													>
+														{name}
+													</p>
+													<p
+														translate="no"
+														className="text-sm text-gray-600"
+													>
+														{lastMessage ||
+															'No message yet.'}{' '}
+													</p>
+													<p
+														translate="no"
+														className="text-xs text-gray-400"
+													>
+														{sortTimeAgo(
+															lastMessageTime ||
+																updatedAt
+														)}
+													</p>
+												</div>
+												{unRead && (
+													<div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center justify-center h-fit px-1 bg-red-500 rounded-full">
+														<p className="text-sm text-white">
+															{unreadCount}
+														</p>
+													</div>
+												)}
+											</Link>
+										</MovingBorder>
+									);
+								}
+							)
+						)}
+					</div>
+				</div>
+			</div>
+
+			{/* Context Menu */}
+			{contextMenu && (
+				<div
+					className="absolute bg-white shadow-md rounded-md py-2 w-40 border z-50"
+					style={{ top: contextMenu.y, left: contextMenu.x }}
+					onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+				>
+					<ul className="text-sm text-gray-800">
+						<li>
+							<button
+								ref={leaveBtnRef}
+								className="px-4 rounded-none border-none flex w-full items-center gap-2 group py-2 hover:bg-red-200 text-red-600 cursor-pointer active:animate-click select-none"
+								onClick={() => handleDelete(contextMenu.chatId)}
+							>
+								<IconLogout className="group-hover:translate-x-1 transition" />{' '}
+								Leave Chat
+							</button>
+						</li>
+					</ul>
+				</div>
+			)}
+
+			<div className="w-full">
+				<Outlet />
+			</div>
+		</div>
+	);
 }
-
-export const Logo = () => {
-  return (
-    <div className="font-normal flex items-center text-sm text-black py-1 relative z-20 w-full">
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium text-black dark:text-white whitespace-pre grow"
-      >
-        <Input
-          id="search"
-          placeholder="Search a user"
-          type="text"
-          className="rounded-r-none bg-white border-r-0"
-        />
-      </motion.span>
-      <IconSearch className="text-neutral-700 dark:text-neutral-200 bg-white rounded-r-md drop-shadow-sm h-full px-[10px] w-10 items-center justify-center rounded-sm border hover:drop-shadow-md transition cursor-pointer hover:bg-blue-400 hover:text-white scale-95 active:animate-click" />
-    </div>
-  );
-};
-
-export const LogoIcon = () => {
-  return (
-    <Link
-      to="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20 w-full justify-center"
-    >
-      <IconSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    </Link>
-  );
-};

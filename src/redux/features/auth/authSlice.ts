@@ -1,44 +1,60 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type TUserRole = "USER" | "ADMIN";
-export type TUserGender = "male" | "female";
+export type TUserRole = 'USER' | 'ADMIN';
+export type TUserGender = 'male' | 'female';
+
 export type TUser = {
-  email: string;
-  gender: TUserGender;
-  name: {
-    firstName: string;
-    lastName: string;
-  };
-  avatar: string;
-  role: TUserRole;
+	_id: string;
+	email: string;
+	gender: TUserGender;
+	name: {
+		firstName: string;
+		lastName: string;
+	};
+	avatar: string;
+	role: TUserRole;
 };
 
 type TAuthState = {
-  user: TUser | null;
-  token: string | null;
+	user: TUser | null;
+	token: string | null;
 };
 
 const initialState: TAuthState = {
-  user: null,
-  token: null,
+	user: null,
+	token: null,
 };
 
 const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    setUser: (state, action) => {
-      const { user, token } = action.payload;
+	name: 'auth',
+	initialState,
+	reducers: {
+		// Set user and token
+		setUser: (
+			state,
+			action: PayloadAction<{ user: TUser; token: string }>
+		) => {
+			state.user = action.payload.user;
+			state.token = action.payload.token;
+		},
 
-      state.user = user;
-      state.token = token;
-    },
-    logout: (state) => {
-      state.token = null;
-      state.user = null;
-    },
-  },
+		// Set only the token
+		setToken: (state, action: PayloadAction<string>) => {
+			state.token = action.payload;
+		},
+
+		// Clear user data and token on logout
+		logout: (state) => {
+			state.user = null;
+			state.token = null;
+
+			fetch(`${import.meta.env.VITE_BASE_URL}/auth/logout`, {
+				method: 'POST',
+				credentials: 'include',
+			});
+		},
+	},
 });
 
-export const { logout, setUser } = authSlice.actions;
+export const { logout, setUser, setToken } = authSlice.actions;
 export default authSlice.reducer;
