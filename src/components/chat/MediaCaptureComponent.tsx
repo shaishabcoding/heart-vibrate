@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { XCircle, CheckCircle, Camera, Video } from 'lucide-react';
+import { XCircle, CheckCircle } from 'lucide-react';
+import { IconPhoto, IconVideo } from '@tabler/icons-react';
 
 interface MediaCaptureProps {
 	onSend: (media: Blob, type: 'image' | 'video') => void;
@@ -41,14 +42,14 @@ const MediaCaptureComponent: React.FC<MediaCaptureProps> = ({ onSend }) => {
 				whileTap={{ scale: 0.9 }}
 				className="p-2 rounded-full bg-blue-500 text-white shadow-lg"
 			>
-				<Camera size={24} />
+				<IconPhoto size={24} />
 			</motion.button>
 			<motion.button
 				onClick={() => selectMedia('video')}
 				whileTap={{ scale: 0.9 }}
 				className="p-2 rounded-full bg-blue-500 text-white shadow-lg"
 			>
-				<Video size={24} />
+				<IconVideo size={24} />
 			</motion.button>
 
 			{mediaURL && mediaType && (
