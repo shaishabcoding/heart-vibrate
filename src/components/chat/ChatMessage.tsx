@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from 'react';
 import Img from '@/components/ui/Img';
 import url from '@/lib/url';
 import { toast } from 'sonner';
+import { useSocket } from '@/provider/SocketProvider';
+import { useParams } from 'react-router-dom';
 
 interface ChatMessageProps {
 	message: any;
@@ -24,6 +26,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 	const [showMenu, setShowMenu] = useState(false);
 	const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 	const menuRef = useRef<HTMLDivElement>(null);
+	const { socket } = useSocket();
+	const params = useParams();
 
 	const [translate, setTranslate] = useState(false);
 	const [content, setDisplayContent] = useState(message.content);
@@ -125,6 +129,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 		}
 	};
 
+	const handleDelete = () => {
+		socket!.emit('deleteMessage', {
+			messageId: message._id,
+			roomId: params.chatId,
+		});
+	};
+
 	return (
 		<div
 			key={message.id}
@@ -213,7 +224,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 								<IconHeart /> Like
 							</button>
 						) : (
-							<button className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click">
+							<button
+								onClick={handleDelete}
+								className="flex items-center px-2 gap-2 w-full text-left py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-none active:animate-click"
+							>
 								<IconTrash /> Delete
 							</button>
 						)}

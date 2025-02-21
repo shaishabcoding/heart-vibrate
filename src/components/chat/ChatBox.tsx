@@ -148,6 +148,13 @@ const ChatBox = () => {
 			}
 		);
 
+		socket.on('messageDeleted', ({ messageId, roomId }) => {
+			if (roomId === params.chatId)
+				setMessages((preMessage) =>
+					preMessage.filter((message) => message._id !== messageId)
+				);
+		});
+
 		socket.on('chatUpdated', refetch);
 
 		return () => {
